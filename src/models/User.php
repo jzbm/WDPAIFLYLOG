@@ -24,7 +24,7 @@ class User {
         $this->avatar = $avatar;
     }
 
-    // ✅ Getters
+  
     public function getId(): int
     {
         return $this->id;
@@ -52,11 +52,11 @@ class User {
 
     public function getAvatar(): string
     {
-        // Ustaw domyślny awatar, jeśli użytkownik nie ma przypisanego pliku
+        // todo
         return $this->avatar ? '/uploads/avatars/' . $this->avatar : '/uploads/avatars/default.png';
     }
 
-    // ✅ Setters
+    
     public function setId(int $id): void
     {
         $this->id = $id;

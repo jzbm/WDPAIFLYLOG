@@ -42,16 +42,31 @@
 
         <?php if (!empty($posts)): ?>
             <?php foreach ($posts as $post): ?>
-                <div class="card">
+            <div class="card" id="post-<?= $post->getId(); ?>">
                     <div class="post-header">
-                        <h2><?php echo htmlspecialchars($post->getTitle()); ?></h2>
-                        <form method="POST" action="/like-post" onsubmit="event.preventDefault(); toggleLike(<?php echo $post->getId(); ?>, this.querySelector('.like-btn'));">
-                            <input type="hidden" name="post_id" value="<?php echo $post->getId(); ?>">
-                            <button type="submit" class="like-btn <?php echo $post->isLikedByUser() ? 'liked' : ''; ?>">
-                                <?php echo $post->isLikedByUser() ? '❤️' : '🤍'; ?> <?php echo $post->getLikesCount(); ?>
-                            </button>
-                        </form>
+                        <h2><?= htmlspecialchars($post->getTitle()) ?></h2>
+                    
+                        <div style="display: flex; gap: 8px;">
+                            <form method="POST" action="/like-post" onsubmit="event.preventDefault(); toggleLike(<?= $post->getId(); ?>, this.querySelector('.like-btn'));">
+                                <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
+                                <button type="submit" class="like-btn <?= $post->isLikedByUser() ? 'liked' : ''; ?>">
+                                    <i class="<?= $post->isLikedByUser() ? 'fa-solid fa-heart' : 'fa-regular fa-heart' ?>"></i>
+                                    <?= $post->getLikesCount(); ?>
+                                </button>
+                            </form>
+                    
+                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                                <form method="POST" action="/delete-post" onsubmit="return confirm('Na pewno usunąć ten post?');">
+                                    <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
+                                    <button type="submit" class="delete-post-btn" title="Usuń post">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
                     </div>
+                    
+                    
                     
                     <p><?php echo $post->getFormattedContent(); ?></p>
 

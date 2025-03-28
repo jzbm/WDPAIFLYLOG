@@ -21,7 +21,7 @@ class Flight {
         $this->flightTime = $flightTime;
         $this->departureTime = $departureTime;
         $this->landingTime = $landingTime;
-        $this->nickname = $nickname; // 🔥 Tu był brak!
+        $this->nickname = $nickname; //
         $this->createdAt = $createdAt;
     }
 
@@ -58,10 +58,10 @@ class Flight {
     }
 
     public function getNickname() {
-        return $this->nickname; // 🔥 Brakujący getter!
+        return $this->nickname; 
     }
 
     public function getCreatedAt() {
-        return $this->createdAt; // ✅ Getter dla created_at
+        return $this->createdAt; 
     }
 }

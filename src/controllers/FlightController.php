@@ -10,7 +10,7 @@ class FlightController extends AppController {
         $this->flightRepository = new FlightRepository();
     }
 
-    // ✅ Dodawanie lotów
+  
     public function add_flight() {
         if (!isset($_SESSION['user'])) {
             header("Location: /login");
@@ -27,7 +27,7 @@ class FlightController extends AppController {
             if (empty($departureAirport) || empty($landingAirport) || empty($aircraft) || empty($departureTime) || empty($landingTime)) {
                 $error = "All fields are required!";
             } else {
-                // ✅ Konwersja formatu daty na kompatybilny z PostgreSQL
+                
                 $departureTime = date('Y-m-d H:i:s', strtotime($departureTime));
                 $landingTime = date('Y-m-d H:i:s', strtotime($landingTime));
     
@@ -37,7 +37,7 @@ class FlightController extends AppController {
                 if ($landingTimestamp <= $departureTimestamp) {
                     $error = "Landing time must be after departure time!";
                 } else {
-                    // ✅ Obliczanie czasu lotu w minutach (jako integer)
+                    
                     $flightTime = (int)(($landingTimestamp - $departureTimestamp) / 60);
     
                     $userId = $this->get_user_id();
@@ -76,7 +76,7 @@ class FlightController extends AppController {
         }
     }
     
-    // ✅ Przesyłanie awatara
+  
     public function upload_Avatar() {
         if (!isset($_SESSION['user'])) {
             header("Location: /login");
@@ -88,19 +88,19 @@ class FlightController extends AppController {
 
             $targetDir = "uploads/avatars/";
             if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0777, true); // ✅ Tworzymy katalog, jeśli nie istnieje
+                mkdir($targetDir, 0777, true);
             }
 
             $fileName = basename($_FILES['avatar']['name']);
             $targetFilePath = $targetDir . $userId . "_" . $fileName;
             $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
 
-            // ✅ Dozwolone formaty plików
+        
             $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
 
             if (in_array($fileType, $allowedTypes)) {
                 if (move_uploaded_file($_FILES['avatar']['tmp_name'], $targetFilePath)) {
-                    // ✅ Zaktualizuj ścieżkę awatara w bazie danych
+                    
                     $this->flightRepository->updateUserAvatar($userId, $targetFilePath);
                     header("Location: /profile");
                     exit();
@@ -113,7 +113,6 @@ class FlightController extends AppController {
         }
     }
 
-    // ✅ Pobieranie danych użytkownika
     private function get_user_data() {
         $stmt = $this->flightRepository->getDatabase()->prepare('
             SELECT u.nickname, u.avatar, a.email
@@ -128,13 +127,12 @@ class FlightController extends AppController {
     }
     
     
-    // ✅ Łączny czas lotów
+
     public function get_total_flight_time() {
         $userId = $this->get_user_id();
         return $this->flightRepository->getTotalFlightTimeByUserId($userId);
     }
 
-    // ✅ Pobieranie ID użytkownika
     private function get_user_id() {
         $stmt = $this->flightRepository->getDatabase()->prepare('
             SELECT id FROM auth WHERE email = :email
@@ -160,7 +158,6 @@ class FlightController extends AppController {
         $flights = $this->flightRepository->getFlightsByUserId($userId);
         $totalFlightTime = $this->flightRepository->getTotalFlightTimeByUserId($userId);
     
-        // ✅ Pobranie najczęściej używanego samolotu i lotniska
         $favouriteAircraft = $this->flightRepository->getMostUsedAircraft($userId);
         $favouriteAirport = $this->flightRepository->getMostUsedAirport($userId);
     
@@ -171,7 +168,5 @@ class FlightController extends AppController {
             'favouriteAircraft' => $favouriteAircraft ?? 'No data',
             'favouriteAirport' => $favouriteAirport ?? 'No data'
         ]);
-    }
-    
-    
+    } 
 }

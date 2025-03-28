@@ -6,15 +6,42 @@
     </div>
     <div class="nav-right">
         <?php if (isset($_SESSION['user'])): ?>
+            <?php
+                require_once __DIR__ . '/../../src/repository/NotificationRepository.php';
+                $notificationRepo = new NotificationRepository();
+
+                // Pobierz ID użytkownika jeśli jest dostępne w sesji
+                $db = Database::getInstance()->connect();
+                $stmt = $db->prepare('SELECT id FROM auth WHERE email = :email');
+                $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
+                $stmt->execute();
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                $userId = $user['id'] ?? null;
+
+                $unreadCount = $userId ? $notificationRepo->countUnreadNotifications($userId) : 0;
+            ?>
+
+            <?php if ($_SESSION['role'] === 'admin'): ?>
+                <a href="/user-management" class="nav-item">
+                    <i class="fa-solid fa-gears"></i> Control Panel
+                </a>
+            <?php endif; ?>
+
             <a href="/profile" class="nav-item">
                 <i class="fa-solid fa-user"></i> Profile
             </a>
+
             <a href="/notifications" class="nav-item">
                 <i class="fa-solid fa-bell"></i> Notifications
+                <?php if ($unreadCount > 0): ?>
+                    <span class="notification-badge"><?= $unreadCount ?></span>
+                <?php endif; ?>
             </a>
+
             <a href="/messages" class="nav-item">
                 <i class="fa-solid fa-envelope"></i> Messages
             </a>
+
             <a href="/logout" class="nav-item">
                 <i class="fa-solid fa-sign-out-alt"></i> Logout
             </a>

@@ -31,15 +31,16 @@ class UserRepository {
         return $this->database->lastInsertId();
     }
 
-    // ✅ Tworzy rekord w tabeli users (dane profilu)
     public function createUser(int $id, string $nickname): void {
         $stmt = $this->database->prepare('
-            INSERT INTO users (id, nickname) VALUES (:id, :nickname)
+            INSERT INTO users (id, nickname, role_id)
+            VALUES (:id, :nickname, 1) -- 1 = USER
         ');
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->bindParam(':nickname', $nickname, PDO::PARAM_STR);
         $stmt->execute();
     }
+    
 
     // ✅ Pobiera dane użytkownika (profilowe) po ID
     public function getUserById(int $id): ?array {
@@ -51,17 +52,20 @@ class UserRepository {
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
-    // ✅ Pobieranie roli po ID (jeśli przechowujesz role np. w user_roles)
-    public function getUserRoleById(int $id): ?string {
+    public function getUserRoleById($id) {
         $stmt = $this->database->prepare('
-            SELECT role_id FROM users WHERE id = :id
+            SELECT r.name
+            FROM users u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.id = :id
         ');
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
-
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $user['role_id'] ?? null;
+    
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return strtolower($result['name']); // np. 'admin'
     }
+    
 
     // ✅ Lista użytkowników (np. do wysyłania wiadomości)
     public function getAllUsers(): array {
@@ -72,4 +76,24 @@ class UserRepository {
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getAllUsersWithRoles(): array {
+        $stmt = $this->database->prepare('
+            SELECT u.id, a.email, u.nickname, r.name AS role
+            FROM users u
+            JOIN auth a ON u.id = a.id
+            JOIN roles r ON u.role_id = r.id
+        ');
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function deleteUserById(int $id): void {
+        $stmt = $this->database->prepare('DELETE FROM auth WHERE id = :id');
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
+    
 }

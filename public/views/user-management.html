@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+    <link href="/public/styles/main.css" rel="stylesheet">
+    <link href="/public/styles/navbar.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav>
+        <?php include 'navbar.php'; ?>
+    </nav>
+
+    <main>
+        <h1>Control Panel</h1>
+
+        <?php if (!empty($users)): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Nickname</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($users as $user): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($user['email']) ?></td>
+                            <td><?= htmlspecialchars($user['nickname']) ?></td>
+                            <td><?= htmlspecialchars($user['role']) ?></td>
+                            <td>
+                                <?php if ($user['email'] !== $_SESSION['user']): ?>
+                                    <form method="POST" action="/delete-user" onsubmit="return confirm('Na pewno usunąć tego użytkownika?');">
+                                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                        <button type="submit">Usuń</button>
+                                    </form>
+                                <?php else: ?>
+                                    (Twój profil)
+                                <?php endif; ?>
+                            </td>
+                            
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>No users found.</p>
+        <?php endif; ?>
+    </main>
+</body>
+</html>

@@ -110,4 +110,23 @@ class PostRepository {
 
         return $stmt->fetch(PDO::FETCH_ASSOC)['count'] > 0;
     }
+
+    public function deletePostById(int $postId): void {
+        $stmt = $this->database->prepare('
+            DELETE FROM posts WHERE id = :id
+        ');
+        $stmt->bindParam(':id', $postId, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
+    public function getPostAuthorId($postId) {
+    $stmt = $this->database->prepare('
+        SELECT user_id FROM posts WHERE id = :post_id
+    ');
+    $stmt->bindParam(':post_id', $postId, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['user_id'] ?? null;
+}
+
 }

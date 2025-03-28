@@ -13,8 +13,15 @@ class NotificationRepository {
     public function getDatabase() {
         return $this->database;
     }
+    public function createNotification($userId, $content) {
+        $stmt = $this->database->prepare('
+            INSERT INTO notifications (user_id, content) VALUES (:user_id, :content)
+        ');
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindParam(':content', $content, PDO::PARAM_STR);
+        $stmt->execute();
+    }    
 
-    // ✅ Pobieranie powiadomień dla użytkownika
     public function getNotificationsForUser($userId) {
         $stmt = $this->database->prepare('
             SELECT * FROM notifications
@@ -39,15 +46,28 @@ class NotificationRepository {
 
         return $result;
     }
-
-    // ✅ Oznaczanie powiadomień jako przeczytane
-    public function markAsRead($notificationId) {
+    
+    public function markAllAsRead($userId) {
         $stmt = $this->database->prepare('
             UPDATE notifications
             SET is_read = true
-            WHERE id = :id
+            WHERE user_id = :user_id
         ');
-        $stmt->bindParam(':id', $notificationId, PDO::PARAM_INT);
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
         $stmt->execute();
     }
+
+
+    public function countUnreadNotifications($userId) {
+        $stmt = $this->database->prepare('
+            SELECT COUNT(*) as unread_count FROM notifications
+            WHERE user_id = :user_id AND is_read = false
+        ');
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['unread_count'] ?? 0;
+    }
+    
 }

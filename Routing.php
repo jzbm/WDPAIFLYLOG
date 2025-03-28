@@ -6,7 +6,6 @@ require_once 'src/controllers/SecurityController.php';
 require_once 'src/controllers/FlightController.php';
 require_once 'src/controllers/MessageController.php';
 require_once 'src/controllers/NotificationController.php';
-require_once 'src/controllers/DashboardController.php';
 
 class Routing {
     public static $routes = [];

@@ -10,8 +10,7 @@ class NotificationController extends AppController {
         parent::__construct();
         $this->notificationRepository = new NotificationRepository();
     }
-
-    // ✅ Wyświetlanie powiadomień
+    
     public function notifications() {
         if (!isset($_SESSION['user'])) {
             header("Location: /login");
@@ -26,12 +25,18 @@ class NotificationController extends AppController {
         ]);
     }
 
-    // ✅ Oznaczanie powiadomień jako przeczytane
-    public function mark_as_read($notificationId) {
-        $this->notificationRepository->markAsRead($notificationId);
+    public function mark_all_as_read() {
+        if (!isset($_SESSION['user'])) {
+            header("Location: /login");
+            exit();
+        }
+    
+        $userId = $this->get_user_id();
+        $this->notificationRepository->markAllAsRead($userId);
         header("Location: /notifications");
         exit();
     }
+    
 
     private function get_user_id() {
         $stmt = $this->notificationRepository->getDatabase()->prepare('

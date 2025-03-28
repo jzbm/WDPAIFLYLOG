@@ -76,3 +76,12 @@
         text-align: center;
     }
 }
+.notification-badge {
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    margin-left: 5px;
+    vertical-align: top;
+}
