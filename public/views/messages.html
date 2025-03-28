@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/public/styles/main.css" rel="stylesheet" />
+    <link href="/public/styles/navbar.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
+    <title>Messages</title>
+</head>
+<body>
+    <nav>
+        <?php include 'navbar.php'; ?>
+    </nav>
+
+    <main>
+        <h1>Your Messages</h1>
+        
+        <form method="POST" action="/send-message">
+            <select name="receiver_id" required>
+                <option value="">Select recipient</option>
+                <?php foreach ($users as $user): ?>
+                    <option value="<?= htmlspecialchars($user['id']) ?>">
+                        <?= htmlspecialchars($user['email']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <input type="text" name="content" placeholder="Type your message..." required>
+            <button type="submit">Send Message</button>
+        </form>
+        
+        <h2>Your Messages</h2>
+        <?php if (!empty($messages)): ?>
+            <?php foreach ($messages as $message): ?>
+                <div>
+                    <p><strong><?= htmlspecialchars($message->getContent()); ?></strong></p>
+                    <p>From: <?= htmlspecialchars($message->getSenderId()); ?></p>
+                    <p>To: <?= htmlspecialchars($message->getReceiverId()); ?></p>
+                    <p><?= htmlspecialchars($message->getCreatedAt()); ?></p>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>No messages yet.</p>
+        <?php endif; ?>
+    </main>
+</body>
+</html>

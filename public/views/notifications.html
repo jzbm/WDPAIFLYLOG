@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/public/styles/main.css" rel="stylesheet" />
+    <link href="/public/styles/navbar.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
+    <title>Notifications</title>
+</head>
+<body>
+    <nav>
+        <!-- Nawigacja -->
+        <?php include 'navbar.php'; ?>
+    </nav>
+
+    <main>
+        <h1>Your Notifications</h1>
+        
+        <?php if (!empty($notifications)): ?>
+            <?php foreach ($notifications as $notification): ?>
+                <div class="notification">
+                    <p><?php echo htmlspecialchars($notification['content']); ?></p>
+                    <p><small><?php echo htmlspecialchars($notification['created_at']); ?></small></p>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>No notifications yet.</p>
+        <?php endif; ?>
+    </main>
+</body>
+</html>
