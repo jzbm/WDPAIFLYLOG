@@ -28,7 +28,7 @@ class Routing {
         $controller = self::$routes[$action];
         $object = new $controller;
     
-        // ✅ snake_case zamiast camelCase
+        // snake_case 
         $method = str_replace('-', '_', $action); 
     
         if (method_exists($object, $method)) {

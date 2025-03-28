@@ -54,7 +54,7 @@ class FlightRepository {
         $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
         $stmt->execute();
     
-        $flights = $stmt->fetchAll(PDO::FETCH_ASSOC); // ✅ Wynik zapytania
+        $flights = $stmt->fetchAll(PDO::FETCH_ASSOC); 
     
         $result = [];
     
@@ -85,7 +85,7 @@ class FlightRepository {
     
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
     
-        // ✅ Przekształcamy minuty na format HH:MM
+        // hh mm 
         $totalMinutes = (int) $result['total_time'];
         $hours = floor($totalMinutes / 60);
         $minutes = $totalMinutes % 60;

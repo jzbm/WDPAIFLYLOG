@@ -9,7 +9,7 @@ class UserRepository {
         $this->database = Database::getInstance()->connect();
     }
 
-    // ✅ Pobiera dane logowania (auth) po emailu
+    
     public function getAuthByEmail(string $email): ?array {
         $stmt = $this->database->prepare('
             SELECT * FROM auth WHERE email = :email
@@ -19,7 +19,7 @@ class UserRepository {
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
-    // ✅ Tworzy rekord w tabeli auth
+    
     public function createAuth(string $email, string $hashedPassword): int {
         $stmt = $this->database->prepare('
             INSERT INTO auth (email, password) VALUES (:email, :password)
@@ -42,7 +42,7 @@ class UserRepository {
     }
     
 
-    // ✅ Pobiera dane użytkownika (profilowe) po ID
+    
     public function getUserById(int $id): ?array {
         $stmt = $this->database->prepare('
             SELECT * FROM users WHERE id = :id
@@ -63,11 +63,11 @@ class UserRepository {
         $stmt->execute();
     
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return strtolower($result['name']); // np. 'admin'
+        return strtolower($result['name']);  
     }
     
 
-    // ✅ Lista użytkowników (np. do wysyłania wiadomości)
+    
     public function getAllUsers(): array {
         $stmt = $this->database->prepare('
             SELECT id, nickname FROM users
@@ -88,7 +88,7 @@ class UserRepository {
     
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     public function deleteUserById(int $id): void {
         $stmt = $this->database->prepare('DELETE FROM auth WHERE id = :id');
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
