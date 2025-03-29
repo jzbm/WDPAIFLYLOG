@@ -1,6 +1,8 @@
 <?php
 require_once 'AppController.php';
 require_once __DIR__ . '/../repository/FlightRepository.php';
+require_once __DIR__ . '/../models/User.php';
+
 
 class FlightController extends AppController {
     private $flightRepository;
@@ -76,58 +78,6 @@ class FlightController extends AppController {
         }
     }
     
-  
-    public function upload_Avatar() {
-        if (!isset($_SESSION['user'])) {
-            header("Location: /login");
-            exit();
-        }
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
-            $userId = $this->get_user_id();
-
-            $targetDir = "uploads/avatars/";
-            if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
-
-            $fileName = basename($_FILES['avatar']['name']);
-            $targetFilePath = $targetDir . $userId . "_" . $fileName;
-            $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
-
-        
-            $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-
-            if (in_array($fileType, $allowedTypes)) {
-                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $targetFilePath)) {
-                    
-                    $this->flightRepository->updateUserAvatar($userId, $targetFilePath);
-                    header("Location: /profile");
-                    exit();
-                } else {
-                    echo "Błąd podczas przesyłania pliku!";
-                }
-            } else {
-                echo "Niedozwolony format pliku!";
-            }
-        }
-    }
-
-    private function get_user_data() {
-        $stmt = $this->flightRepository->getDatabase()->prepare('
-            SELECT u.nickname, u.avatar, a.email
-            FROM users u
-            JOIN auth a ON u.id = a.id
-            WHERE a.email = :email
-        ');
-        $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
-        $stmt->execute();
-    
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    
-    
-
     public function get_total_flight_time() {
         $userId = $this->get_user_id();
         return $this->flightRepository->getTotalFlightTimeByUserId($userId);
@@ -146,27 +96,5 @@ class FlightController extends AppController {
 
         return $user['id'] ?? null;
     }
-
-    public function profile() {
-        if (!isset($_SESSION['user'])) {
-            header("Location: /login");
-            exit();
-        }
     
-        $userId = $this->get_user_id();
-        $user = $this->get_user_data();
-        $flights = $this->flightRepository->getFlightsByUserId($userId);
-        $totalFlightTime = $this->flightRepository->getTotalFlightTimeByUserId($userId);
-    
-        $favouriteAircraft = $this->flightRepository->getMostUsedAircraft($userId);
-        $favouriteAirport = $this->flightRepository->getMostUsedAirport($userId);
-    
-        $this->render('profile', [
-            'user' => $user,
-            'flights' => $flights,
-            'totalFlightTime' => $totalFlightTime,
-            'favouriteAircraft' => $favouriteAircraft ?? 'No data',
-            'favouriteAirport' => $favouriteAirport ?? 'No data'
-        ]);
-    } 
 }

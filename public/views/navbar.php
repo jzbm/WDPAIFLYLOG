@@ -9,14 +9,12 @@
             <?php
                 require_once __DIR__ . '/../../src/repository/NotificationRepository.php';
                 $notificationRepo = new NotificationRepository();
-
-                // Pobierz ID użytkownika jeśli jest dostępne w sesji
                 $db = Database::getInstance()->connect();
                 $stmt = $db->prepare('SELECT id FROM auth WHERE email = :email');
                 $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
                 $stmt->execute();
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
-                $userId = $user['id'] ?? null;
+                $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
+                $userId = $userRow['id'] ?? null;    // cwel mi psul profil przez nadpisywanie zmiennej tablico
 
                 $unreadCount = $userId ? $notificationRepo->countUnreadNotifications($userId) : 0;
             ?>

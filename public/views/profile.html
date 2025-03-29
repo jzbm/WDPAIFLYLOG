@@ -16,7 +16,7 @@
     </nav>
 
     <div class="profile-container">
-         <!-- ✅ Logbook (lista lotów) -->
+        
         <div class="logbook-section">
             <h2>Add Flight</h2>
             <form class="flight-form" method="POST" action="/add-flight">
@@ -36,7 +36,7 @@
                         <div class="flight-card <?php echo $index >= 3 ? 'hidden-flight' : ''; ?>" data-id="<?php echo $flight->getId(); ?>">
                             <div class="flight-header">
                                 <p><strong>Aircraft:</strong> <?php echo htmlspecialchars($flight->getAircraft()); ?></p>
-                                <!-- ✅ Ikonka usuwania -->
+                                
                                 <button class="delete-btn" onclick="deleteFlight(<?php echo $flight->getId(); ?>)">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
@@ -53,7 +53,7 @@
                 <?php endif; ?>
             </div>
             
-            <!-- ✅ Przycisk "Show more" -->
+          
             <?php if (count($flights) > 3): ?>
                 <button id="show-more-btn" onclick="showMoreFlights()">
                     Show more (<?php echo count($flights) - 3; ?>)
@@ -62,22 +62,21 @@
             
             
         </div>
-        <!-- ✅ Awatar i edycja awatara -->
         <div class="profile-section">
             <div class="avatar-section">
-                <img src="<?php echo !empty($user['avatar']) ? htmlspecialchars($user['avatar']) : '/uploads/avatars/default.png'; ?>" 
-                    alt="Avatar" class="profile-avatar">
-
+                <img src="<?= htmlspecialchars($user->getAvatar()); ?>" alt="Avatar" class="profile-avatar">
+                <p><strong>Nick:</strong> <?= htmlspecialchars($user->getNickname()); ?></p>
+                
                 <form method="POST" action="/upload-avatar" enctype="multipart/form-data">
                     <input type="file" name="avatar" accept="image/*" required>
                     <button type="submit">Change Avatar</button>
                 </form>
             </div>
 
-            <!-- ✅ Dane użytkownika -->
+         
             <div class="user-info">
-                <p><strong>Nick:</strong> <?php echo htmlspecialchars($user['nickname'] ?? ''); ?></p>
-                <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email'] ?? ''); ?></p>
+                <p><strong>Nick:</strong> <?= htmlspecialchars($user->getNickname()); ?></p>
+                <p><strong>Email:</strong> <?= htmlspecialchars($user->getEmail()); ?></p>                
                 <p><strong>Total flight time:</strong> <?php echo htmlspecialchars($totalFlightTime ?? '0:00'); ?> hours</p>
                 <p><strong>Favourite aircraft:</strong> <?php echo htmlspecialchars($favouriteAircraft ?? ''); ?></p>
                 <p><strong>Favourite airport:</strong> <?php echo htmlspecialchars($favouriteAirport ?? ''); ?></p>

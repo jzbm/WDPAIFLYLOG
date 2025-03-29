@@ -10,8 +10,9 @@ class Post {
     private $likesCount;
     private $isLikedByUser;
     private $createdAt;
+    private $avatar;
 
-    public function __construct($id, $userId, $title, $createdAt, $content, $nickname, $image = null) {
+    public function __construct($id, $userId, $title, $createdAt, $content, $nickname, $image = null, $avatar = null) {
         $this->id = $id;
         $this->userId = $userId;
         $this->title = $title;
@@ -19,6 +20,7 @@ class Post {
         $this->nickname = $nickname;
         $this->image = $image;
         $this->createdAt = $createdAt;
+        $this->avatar = $avatar;
     }
 
     public function getId() {
@@ -71,4 +73,17 @@ class Post {
     public function getCreatedAt() {
         return $this->createdAt;
     }
+
+    public function getAvatar(): string {
+        if (empty($this->avatar)) {
+            return '/uploads/avatars/default.png';
+        }
+    
+        if (str_contains($this->avatar, '/')) {
+            return '/' . ltrim($this->avatar, '/');
+        }
+    
+        return '/uploads/avatars/' . $this->avatar;
+    }
+    
 }

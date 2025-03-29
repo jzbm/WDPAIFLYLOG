@@ -31,7 +31,7 @@ class PostRepository {
 
     public function get_Posts($userId = null) {
         $stmt = $this->database->prepare('
-            SELECT p.id, p.user_id, p.title, p.content, p.image, p.created_at, u.nickname,
+            SELECT p.id, p.user_id, p.title, p.content, p.image, p.created_at, u.nickname, u.avatar,
                    (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS likes_count,
                    COALESCE((
                        SELECT 1 FROM likes WHERE post_id = p.id AND user_id = :userId
@@ -55,7 +55,8 @@ class PostRepository {
                 $post['created_at'],
                 $post['content'],
                 $post['nickname'],
-                $post['image'] ?? null
+                $post['image'] ?? null,
+                $post['avatar'] ?? null
             );
     
             $postObject->setLikesCount((int) $post['likes_count']);
@@ -118,7 +119,7 @@ class PostRepository {
         $stmt->bindParam(':id', $postId, PDO::PARAM_INT);
         $stmt->execute();
     }
-    
+
     public function getPostAuthorId($postId) {
     $stmt = $this->database->prepare('
         SELECT user_id FROM posts WHERE id = :post_id

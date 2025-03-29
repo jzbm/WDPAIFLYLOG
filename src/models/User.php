@@ -50,11 +50,16 @@ class User {
         return $this->roleId;
     }
 
-    public function getAvatar(): string
-    {
-        // todo
-        return $this->avatar ? '/uploads/avatars/' . $this->avatar : '/uploads/avatars/default.png';
+    public function getAvatar(): string {
+        if (empty($this->avatar)) {
+            return '/uploads/avatars/default.png';
+        }
+    
+        return str_contains($this->avatar, '/') 
+            ? '/' . ltrim($this->avatar, '/') 
+            : '/uploads/avatars/' . $this->avatar;
     }
+    
 
     
     public function setId(int $id): void

@@ -8,8 +8,6 @@
 </head>
 <body>
     <h1>Posts</h1>
-
-    <!-- Link do dodania posta (tylko dla zalogowanych) -->
     <?php if (!empty($_SESSION['user'])): ?>
         <a href="/add-post">Add new post</a>
     <?php endif; ?>

@@ -7,14 +7,16 @@ class Comment {
     private $content;
     private $createdAt;
     private $nickname;
+    private $avatar;
 
-    public function __construct($id, $postId, $userId, $content, $createdAt, $nickname) {
+    public function __construct($id, $postId, $userId, $content, $createdAt, $nickname, $avatar) {
         $this->id = $id;
         $this->postId = $postId;
         $this->userId = $userId;
         $this->content = $content;
         $this->createdAt = $createdAt;
         $this->nickname = $nickname;
+        $this->avatar = $avatar;
     }
 
     public function getId() {
@@ -40,4 +42,19 @@ class Comment {
     public function getNickname() {
         return $this->nickname;
     }
+    
+
+    public function getAvatar(): string {
+        
+        if (empty($this->avatar)) {
+            return '/uploads/avatars/default.png';
+        }
+        if (str_contains($this->avatar, '/')) {
+            return '/' . ltrim($this->avatar, '/'); 
+        }
+    
+        return '/uploads/avatars/' . $this->avatar;
+    }
+    
+    
 }

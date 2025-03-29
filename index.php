@@ -9,6 +9,7 @@ require_once __DIR__ . '/src/controllers/MessageController.php';
 require_once __DIR__ . '/src/controllers/NotificationController.php';
 require_once __DIR__ . '/src/controllers/CommentController.php';
 require_once __DIR__ . '/src/controllers/AdminController.php';
+require_once __DIR__ . '/src/controllers/ProfileController.php';
 
 
 //  mainpage domyslnie
@@ -34,8 +35,9 @@ Routing::post('delete-post', 'PostController');
 
 Routing::post('add-flight', 'FlightController');
 Routing::post('delete-flight', 'FlightController');
-Routing::get('profile', 'FlightController');
-Routing::post('upload-avatar', 'FlightController');
+
+Routing::get('profile', 'ProfileController');
+Routing::post('upload-avatar', 'ProfileController');
 
 Routing::get('messages', 'MessageController');
 Routing::post('send-message', 'MessageController');

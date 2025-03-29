@@ -82,17 +82,15 @@
 .avatar {
     width: 44px;
     height: 44px;
-    background-color: #eb8282;
     border-radius: 10%;
-    flex-shrink: 0;
+    object-fit: cover;
 }
 
 .comment-author .avatar {
     width: 32px;
     height: 32px;
-    background-color: #c47f7f;
     border-radius: 10%;
-    flex-shrink: 0;
+    object-fit: cover;
 }
 
 .author-meta {

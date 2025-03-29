@@ -43,7 +43,7 @@ class CommentRepository {
 
     public function getCommentsByPostId($postId) {
         $stmt = $this->database->prepare('
-            SELECT c.*, u.nickname 
+            SELECT c.*, u.nickname, u.avatar
             FROM comments c
             JOIN users u ON c.user_id = u.id
             WHERE c.post_id = :postId
@@ -63,7 +63,8 @@ class CommentRepository {
                 $comment['user_id'],
                 $comment['content'],
                 $comment['created_at'],
-                $comment['nickname']
+                $comment['nickname'],
+                $comment['avatar'] ?? null
             );
         }
 

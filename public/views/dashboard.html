@@ -16,7 +16,7 @@
     <nav>
         <?php include 'navbar.php'; ?>
     </nav>
-    
+
     <main>
         <?php if (isset($_SESSION['user'])): ?>
             <div class="post-container">
@@ -42,19 +42,19 @@
 
         <?php if (!empty($posts)): ?>
             <?php foreach ($posts as $post): ?>
-            <div class="card" id="post-<?= $post->getId(); ?>">
+                <div class="card" id="post-<?= $post->getId(); ?>">
                     <div class="post-header">
                         <h2><?= htmlspecialchars($post->getTitle()) ?></h2>
-                    
+
                         <div style="display: flex; gap: 8px;">
-                            <form method="POST" action="/like-post" onsubmit="event.preventDefault(); toggleLike(<?= $post->getId(); ?>, this.querySelector('.like-btn'));">
+                            <form method="POST" action="/like-post" onsubmit="event.preventDefault(); toggleLike(<?= $post->getId(); ?>, this.querySelector('.like-btn'))">
                                 <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
                                 <button type="submit" class="like-btn <?= $post->isLikedByUser() ? 'liked' : ''; ?>">
                                     <i class="<?= $post->isLikedByUser() ? 'fa-solid fa-heart' : 'fa-regular fa-heart' ?>"></i>
                                     <?= $post->getLikesCount(); ?>
                                 </button>
                             </form>
-                    
+
                             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                                 <form method="POST" action="/delete-post" onsubmit="return confirm('Na pewno usunąć ten post?');">
                                     <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
@@ -65,19 +65,17 @@
                             <?php endif; ?>
                         </div>
                     </div>
-                    
-                    
-                    
-                    <p><?php echo $post->getFormattedContent(); ?></p>
+
+                    <p><?= $post->getFormattedContent(); ?></p>
 
                     <?php if ($post->getImage()): ?>
-                        <img src="<?php echo $post->getImage(); ?>" alt="Post Image" class="post-image">
+                        <img src="<?= $post->getImage(); ?>" alt="Post Image" class="post-image">
                     <?php endif; ?>
 
                     <div class="author-info">
-                        <div class="avatar"></div>
+                        <img class="avatar" src="<?= htmlspecialchars($post->getAvatar()); ?>" alt="avatar">
                         <div class="author-meta">
-                            <p class="nickname"><?php echo htmlspecialchars($post->getNickname()); ?></p>
+                            <p class="nickname"><?= htmlspecialchars($post->getNickname()); ?></p>
                             <p class="post-date">
                                 <?php
                                     $created = $post->getCreatedAt();
@@ -98,11 +96,11 @@
                                 foreach ($comments as $index => $comment): 
                                     $hiddenClass = $index >= $maxVisibleComments ? 'hidden-comment' : '';
                             ?>
-                                <div class="comment <?php echo $hiddenClass; ?>">
+                                <div class="comment <?= $hiddenClass; ?>">
                                     <div class="comment-author">
-                                        <div class="avatar"></div>
+                                        <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
                                         <div class="author-meta">
-                                            <p class="nickname"><?php echo htmlspecialchars($comment->getNickname()); ?></p>
+                                            <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
                                             <p class="comment-date">
                                                 <?php
                                                     $commentDate = $comment->getCreatedAt();
@@ -111,21 +109,21 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <p><?php echo htmlspecialchars($comment->getContent()); ?></p>
+                                    <p><?= htmlspecialchars($comment->getContent()); ?></p>
                                 </div>
                             <?php endforeach; ?>
                         </div>
 
                         <?php if ($totalComments > $maxVisibleComments): ?>
-                            <button class="show-more-btn" onclick="toggleComments(this, <?php echo $totalComments - $maxVisibleComments; ?>)">
-                                Pokaż więcej komentarzy: <?php echo $totalComments - $maxVisibleComments; ?>
+                            <button class="show-more-btn" onclick="toggleComments(this, <?= $totalComments - $maxVisibleComments; ?>)">
+                                Pokaż więcej komentarzy: <?= $totalComments - $maxVisibleComments; ?>
                             </button>
                         <?php endif; ?>
                     <?php endif; ?>
 
                     <?php if (isset($_SESSION['user'])): ?>
                         <form method="POST" action="/add-comment">
-                            <input type="hidden" name="post_id" value="<?php echo $post->getId(); ?>">
+                            <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
                             <textarea name="content" placeholder="Dodaj komentarz..." required></textarea>
                             <button type="submit">Dodaj komentarz</button>
                         </form>
