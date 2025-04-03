@@ -90,10 +90,30 @@ class UserRepository {
     }
 
     public function deleteUserById(int $id): void {
+        // users cassdcade db 
+        $stmt = $this->database->prepare('DELETE FROM users WHERE id = :id');
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        // auth
         $stmt = $this->database->prepare('DELETE FROM auth WHERE id = :id');
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
     }
     
+
+    public function getUsersByNickname(string $nickname): array {
+        $stmt = $this->database->prepare(
+            'SELECT u.id, a.email, u.nickname, r.name as role 
+             FROM users u 
+             JOIN auth a ON u.id = a.id 
+             JOIN roles r ON u.role_id = r.id 
+             WHERE u.nickname LIKE :nickname'
+        );
+        $like = '%' . $nickname . '%';
+        $stmt->bindParam(':nickname', $like, PDO::PARAM_STR);
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }    
     
 }

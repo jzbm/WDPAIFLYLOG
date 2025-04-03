@@ -20,7 +20,13 @@ class AdminController extends AppController {
             die("Access denied.");
         }
 
-        $users = $this->userRepository->getAllUsersWithRoles();
+        $nickname = $_GET['nickname'] ?? null;
+
+        if ($nickname) {
+            $users = $this->userRepository->getUsersByNickname($nickname);
+        } else {
+            $users = $this->userRepository->getAllUsersWithRoles();
+        }        
         $this->render('user-management', ['users' => $users]);
     }
 
