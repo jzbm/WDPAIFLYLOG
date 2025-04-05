@@ -1,0 +1,224 @@
+
+body {
+    margin: 0;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+}
+
+.profile-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; 
+    padding: 20px;
+    gap: 20px;
+}
+
+.logbook-section {
+    width: 60%;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.flight-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.flight-form input,
+.flight-form button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.flight-form button {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.flight-form button:hover {
+    background-color: #0056b3;
+}
+
+.flight-card {
+    padding: 15px;
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.profile-section {
+    width: 35%;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: flex-start; 
+    gap: 20px;
+}
+
+.avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+}
+
+.profile-avatar {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10%;
+    border: 3px solid #ccc;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.profile-section form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.profile-section input[type="file"] {
+    padding: 5px;
+}
+
+.profile-section button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.profile-section button:hover {
+    background-color: #0056b3;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.user-info strong {
+    color: #1d5694;
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .logbook-section,
+    .profile-section {
+        width: 100%; 
+    }
+
+    .avatar-section {
+        align-items: center;
+    }
+
+    .user-info {
+        align-items: center;
+    }
+}
+.hidden-flight {
+    display: none;
+}
+
+#show-more-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s ease;
+}
+
+#show-more-btn:hover {
+    background-color: #0056b3;
+}
+.delete-btn {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    padding: 0;
+}
+
+.delete-btn:hover {
+    color: #ff0000;
+}
+
+.flight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flight-header p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.flight-card {
+    padding: 15px;
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.hidden-flight {
+    display: none;
+}
+
+#show-more-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s ease;
+}
+
+#show-more-btn:hover {
+    background-color: #0056b3;
+}
