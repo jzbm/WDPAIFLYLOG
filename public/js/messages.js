@@ -67,3 +67,76 @@ document.addEventListener("DOMContentLoaded", function () {
         fetchMessages();
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const userItems = document.querySelectorAll(".user-item a");
+    const messagesMain = document.querySelector(".messages-main");
+    const backButton = document.getElementById("back-to-sidebar");
+
+    if (window.innerWidth <= 768) {
+        messagesMain.classList.add("mobile-sidebar-active");
+    }
+
+    userItems.forEach(item => {
+        item.addEventListener("click", () => {
+            if (window.innerWidth <= 768) {
+                messagesMain.classList.remove("mobile-sidebar-active");
+                messagesMain.classList.add("mobile-chat-active");
+            }
+        });
+    });
+
+    if (backButton) {
+        backButton.addEventListener("click", () => {
+            messagesMain.classList.remove("mobile-chat-active");
+            messagesMain.classList.add("mobile-sidebar-active");
+        });
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const messagesMain = document.querySelector(".messages-main");
+    const backButton = document.getElementById("back-to-sidebar");
+
+    const userItems = document.querySelectorAll(".user-item-link");
+    userItems.forEach(item => {
+        item.addEventListener("click", () => {
+            const userId = item.getAttribute("data-user-id");
+            if (!userId) return;
+
+            if (window.innerWidth <= 768) {
+                messagesMain.classList.remove("mobile-sidebar-active");
+                messagesMain.classList.add("mobile-chat-active");
+            }
+
+            window.location.href = `/messages?user=${userId}`;
+        });
+    });
+
+    if (backButton) {
+        backButton.addEventListener("click", () => {
+            messagesMain.classList.remove("mobile-chat-active");
+            messagesMain.classList.add("mobile-sidebar-active");
+        });
+    }
+
+    if (window.innerWidth <= 768) {
+        if (typeof selectedUserId !== 'undefined') {
+            messagesMain.classList.add("mobile-chat-active");
+        } else {
+            messagesMain.classList.add("mobile-sidebar-active");
+        }
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const links = document.querySelectorAll(".user-item-link");
+    links.forEach(link => {
+        link.addEventListener("click", () => {
+            const userId = link.getAttribute("data-user-id");
+            if (userId) {
+                window.location.href = `/messages?user=${userId}`;
+            }
+        });
+    });
+});

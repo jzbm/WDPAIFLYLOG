@@ -26,7 +26,7 @@ class ProfileController extends AppController {
         $favouriteAircraft = $this->flightRepository->getMostUsedAircraft($userId);
         $favouriteAirport = $this->flightRepository->getMostUsedAirport($userId);
     
-        // obiekt....
+
         $user = new User(
             $userId,
             $userData['email'],

@@ -15,6 +15,16 @@
     <?php include 'navbar.php'; ?>
 </nav>
 
+<?php
+$selectedUserId = $_GET['user'] ?? null;
+
+if (!empty($selectedUserId)) {
+    require_once __DIR__ . '/../../src/repository/UserRepository.php';
+    $userRepo = new UserRepository();
+    $selectedUser = $userRepo->getUserById($selectedUserId);
+}
+?>
+
 <?php if (!empty($_SESSION['error_message'])): ?>
     <div class="error-banner">
         <?= htmlspecialchars($_SESSION['error_message']) ?>
@@ -22,8 +32,19 @@
     <?php unset($_SESSION['error_message']); ?>
 <?php endif; ?>
 
-<main class="messages-main">
+<main class="messages-main <?= empty($selectedUserId) ? 'mobile-sidebar-active' : 'mobile-chat-active' ?>">
     <div class="chat-panel">
+        <div class="chat-header">
+            <button id="back-to-sidebar" class="back-button">&larr; Wróć</button>
+            <?php if (!empty($selectedUser)): ?>
+            <div class="chat-user-info">
+                <img class="chat-avatar" src="<?= !empty($selectedUser['avatar']) ? htmlspecialchars($selectedUser['avatar']) : '../uploads/avatars/default.png' ?>" alt="avatar">
+                <span class="chat-nickname"><?= htmlspecialchars($selectedUser['nickname'] ?? '') ?></span>
+            </div>
+        <?php endif; ?>
+        
+        </div>
+
         <?php if (!empty($selectedUserId)): ?>
             <div class="chat-messages" id="chat-messages"></div>
 
@@ -43,15 +64,14 @@
 
     <aside class="sidebar">
         <input type="text" id="user-search" placeholder="Szukaj użytkownika..." />
-
         <ul class="user-search-results" id="user-search-results" style="display: none;"></ul>
 
         <h3>Ostatnie rozmowy</h3>
         <ul class="user-list" id="user-list">
             <?php foreach ($recentUsers as $user): ?>
                 <li class="user-item">
-                    <a href="/messages?user=<?= htmlspecialchars($user['id']) ?>" style="text-decoration: none; color: inherit;">
-                        <img src="<?= htmlspecialchars($user['avatar'] ?? '/public/images/default-avatar.png') ?>" alt="avatar">
+                    <div class="user-item-link" data-user-id="<?= htmlspecialchars($user['id']) ?>">
+                        <img src="<?= htmlspecialchars($user['avatar'] ?? '/uploads/avatars/default.png') ?>" alt="avatar">
                         <div class="user-info">
                             <p class="nickname"><?= htmlspecialchars($user['nickname']) ?></p>
                             <p class="last-message">
@@ -59,7 +79,7 @@
                             </p>
                         </div>
                         <span class="timestamp"><?= htmlspecialchars($user['timestamp'] ?? '') ?></span>
-                    </a>
+                    </div>
                 </li>
             <?php endforeach; ?>
         </ul>

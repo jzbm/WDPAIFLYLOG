@@ -1,9 +1,13 @@
+<script src="/public/js/navbar.js" defer></script>
 <nav class="navbar">
     <div class="nav-left">
         <a href="/dashboard" class="nav-item">
             <i class="fa-solid fa-house"></i> Main Page
         </a>
     </div>
+    <button class="menu-toggle" id="menu-toggle">
+        <i class="fa fa-bars"></i>
+    </button>
     <div class="nav-right">
         <?php if (isset($_SESSION['user'])): ?>
             <?php
@@ -14,7 +18,7 @@
                 $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
                 $stmt->execute();
                 $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                $userId = $userRow['id'] ?? null;    // cwel mi psul profil przez nadpisywanie zmiennej tablico
+                $userId = $userRow['id'] ?? null;
 
                 $unreadCount = $userId ? $notificationRepo->countUnreadNotifications($userId) : 0;
             ?>
