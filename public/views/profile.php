@@ -16,7 +16,6 @@
     </nav>
 
     <div class="profile-container">
-        
         <div class="logbook-section">
             <h2>Add Flight</h2>
             <form class="flight-form" method="POST" action="/add-flight">
@@ -62,14 +61,14 @@
             
             
         </div>
+        
         <div class="profile-section">
             <div class="avatar-section">
                 <img src="<?= htmlspecialchars($user->getAvatar()); ?>" alt="Avatar" class="profile-avatar">
-                <p><strong>Nick:</strong> <?= htmlspecialchars($user->getNickname()); ?></p>
-                
                 <form method="POST" action="/upload-avatar" enctype="multipart/form-data">
-                    <input type="file" name="avatar" accept="image/*" required>
-                    <button type="submit">Change Avatar</button>
+                    <input type="file" id="avatar-upload" name="avatar" accept="image/*" hidden required>
+                    <label for="avatar-upload" class="upload-button">Wybierz avatar</label>
+                    <button type="submit" class="upload-avatar-btn">Change Avatar</button>
                 </form>
             </div>
 
@@ -82,7 +81,6 @@
                 <p><strong>Favourite airport:</strong> <?php echo htmlspecialchars($favouriteAirport ?? ''); ?></p>
             </div>
         </div>
-
     </div>
     
 </body>

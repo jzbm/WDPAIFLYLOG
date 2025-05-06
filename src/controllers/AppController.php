@@ -9,7 +9,7 @@ class AppController {
     }
 
     protected function render(string $template = null, array $variables = []) {
-        $templatePath = 'public/views/' . $template . '.html';
+        $templatePath = 'public/views/' . $template . '.php';
 
         if (file_exists($templatePath)) {
             extract($variables);

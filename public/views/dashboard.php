@@ -13,10 +13,7 @@
     <title>DASHBOARD</title>
 </head>
 <body>
-    <nav>
         <?php include 'navbar.php'; ?>
-    </nav>
-
     <main>
         <?php if (isset($_SESSION['user'])): ?>
             <div class="post-container">

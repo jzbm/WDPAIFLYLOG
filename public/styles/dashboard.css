@@ -1,34 +1,47 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    background-color: #f0f2f5;
+    color: #333;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 10px;
+}
+
+/* Style dla Kart/Postów */
 .card {
-    width: 70%;
-    margin: 20px auto;
-    padding: 25px;
+    width: 100%;
+    max-width: 800px;
+    margin: 10px auto;
+    padding: 15px;
     background-color: #ffffff;
     border-radius: 16px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     transition: box-shadow 0.3s ease;
 }
-
 .card:hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
-
-.card h2 {
+.card h2, .post-header h2 {
     margin: 0 0 10px;
     font-size: 22px;
     color: #1d5694;
 }
-
-.card p {
+.card p, .card p b, 
+.card p strong, 
+.card p i,
+.card p em, 
+.card p u,
+.card p a {
     font-size: 15px;
     line-height: 1.6;
-    color: #333;
 }
-
-.card p b,
-.card p strong { font-weight: bold; }
-.card p i,
-.card p em { font-style: italic; }
-.card p u { text-decoration: underline; }
 .card p a {
     color: #1d5694;
     text-decoration: underline;
@@ -36,23 +49,54 @@
 .card p a:hover {
     color: #10385d;
 }
-
+/* Header Posta i Informacje o Autorze */
 .post-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
 }
-
-.post-header h2 {
-    font-size: 22px;
-    color: #1d5694;
-    margin: 0;
-    flex-grow: 1;
-}
-
 .post-header form {
     margin-left: 15px;
+}
+.author-info,
+.comment-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+.avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 10%;
+    object-fit: cover;
+}
+.comment-author .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10%;
+    object-fit: cover;
+    border: 1px solid #ccc;
+}
+.author-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.nickname {
+    font-weight: bold;
+    font-size: 14px;
+    color: #1d5694;
+    margin: 0;
+}
+.post-date,
+.comment-date {
+    font-size: 10px;
+    color: #888;
+    margin: 1px 0 0;
 }
 
 .post-image {
@@ -64,172 +108,21 @@
     border: 1px solid #e0e0e0;
 }
 
-.author-info,
-.comment-author {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 20px;
-    padding-top: 12px;
-    border-top: 1px solid #eee;
-}
-
-.avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 10%;
-    object-fit: cover;
-}
-
-.comment-author .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 10%;
-    object-fit: cover;
-}
-
-.author-meta {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.nickname {
-    font-weight: bold;
-    font-size: 14px;
-    color: #1d5694;
-    margin: 0;
-}
-
-.post-date,
-.comment-date {
-    font-size: 10px;
-    color: #888;
-    margin: 1px 0 0;
-}
-.comments-container {
-    margin-top: 20px;
-}
-
-.comment {
-    background-color: #c7c7c7;
-    padding: 26px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    font-size: 14px;
-    color: #333;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.03);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-left: 20px; 
-}
-
-.comment-author {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
-    margin-top: -8px; 
-}
-
-textarea[name="content"] {
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    resize: vertical;
-    margin-top: 8px;
-    font-size: 15px;
-}
-
-form[action="/add-comment"] {
-    margin-top: 15px;
-}
-
-form[action="/add-comment"] button {
-    background-color: #1d5694;
-    color: white;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin-top: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-form[action="/add-comment"] button:hover {
-    background-color: #154574;
-}
-
-.show-more-btn {
-    background-color: #e7f0ff;
-    color: #1d5694;
-    padding: 6px 12px;
-    border: 1px solid #1d5694;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background-color 0.2s;
-}
-
-.show-more-btn:hover {
-    background-color: #d0e5ff;
-}
-
-.hidden-comment {
-    display: none;
-}
-
-.like-btn {
-    background: none;
-    border: none;
-    color: #ff4d4d;
-    font-size: 22px;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: transform 0.2s ease;
-}
-
-.like-btn:hover {
-    transform: scale(1.15);
-}
-
-.like-btn.liked {
-    color: #ff0000;
-}
-.delete-post-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: #c00;
-    font-size: 16px;
-    margin-left: 10px;
-}
-
-.delete-post-btn:hover {
-    color: #f00;
-    text-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
-}
-
+/*Formularz Dodawania Postu */
 .post-container {
-    width: 70%;
-    margin: 30px auto;
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
     background-color: #ffffff;
-    padding: 24px;
+    padding: 20px;
     border-radius: 16px;
     box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.08);
 }
-
 .post-container h2 {
-    margin-bottom: 20px;
-    font-size: 24px;
+    margin-bottom: 15px;
+    font-size: 20px;
     color: #1d5694;
 }
-
 .post-container input[type="text"],
 .post-container input[type="file"],
 .post-container textarea {
@@ -238,18 +131,42 @@ form[action="/add-comment"] button:hover {
     font-size: 15px;
     border-radius: 8px;
     border: 1px solid #ccc;
-    box-sizing: border-box;
-    margin-bottom: 16px;
     background-color: #fafafa;
+    margin-bottom: 16px;
+    box-sizing: border-box;
     transition: border-color 0.2s;
 }
-
 .post-container input:focus,
 .post-container textarea:focus {
     border-color: #1d5694;
     outline: none;
 }
+.post-container form {
+    gap: 10px;
+}
 
+#postSubmitButton {
+    background-color: #1d5694;
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px;
+}
+#postSubmitButton:hover {
+    background-color: #154574;
+}
+#postSubmitButton:focus {
+    outline: none;
+    box-shadow: 0px 0px 6px rgba(29, 86, 148, 0.5);
+}
+
+/* (Toolbar) */
 .editor-toolbar {
     display: flex;
     gap: 6px;
@@ -257,7 +174,6 @@ form[action="/add-comment"] button:hover {
     flex-wrap: wrap;
     justify-content: flex-start;
 }
-
 .editor-btn {
     background-color: #1d5694;
     color: white;
@@ -274,26 +190,21 @@ form[action="/add-comment"] button:hover {
     min-width: 32px;
     height: 32px;
 }
-
 .editor-btn:hover {
     background-color: #154574;
 }
-
 .editor-btn:active {
     background-color: #10385d;
 }
-
 .editor-btn.active {
     background-color: #0e2e4e;
 }
-
 #editor {
-    height: 100px;
-    resize: vertical;
-    font-size: 15px;
+    min-height: 80px;
+    font-size: 14px;
+    padding: 8px;
     border: 1px solid #ccc;
     border-radius: 8px;
-    padding: 10px;
     background-color: #fafafa;
     color: #333;
     overflow-y: auto;
@@ -301,14 +212,12 @@ form[action="/add-comment"] button:hover {
     margin-bottom: 16px;
     position: relative;
 }
-
 #editor.empty::before {
     content: attr(data-placeholder);
     position: absolute;
     color: #888;
     pointer-events: none;
 }
-
 #editor b { font-weight: bold; }
 #editor i { font-style: italic; }
 #editor u { text-decoration: underline; }
@@ -320,27 +229,141 @@ form[action="/add-comment"] button:hover {
     color: #10385d;
 }
 
-#postSubmitButton {
+/* Komentarze */
+.comments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+.comment {
+    background-color: #ffffff;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    border-left: 5px solid #ffac33;
+    font-size: 14px;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+}
+.comment-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    margin-top: 0;
+}
+.comment-author .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ccc;
+}
+.author-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 13px;
+}
+.nickname {
+    font-weight: bold;
+    font-size: 14px;
+    color: #ffac33;
+    margin: 0;
+}
+.comment-date {
+    font-size: 10px;
+    color: #888;
+    margin: 0;
+}
+
+/* Komentarze - Formularz dodawania komentarza */
+form[action="/add-comment"] {
+    margin-top: 15px;
+}
+form[action="/add-comment"] textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+    background-color: #fafafa;
+    margin-top: 8px;
+}
+form[action="/add-comment"] button {
     background-color: #1d5694;
     color: white;
     border: none;
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+    padding: 10px 14px;
+    border-radius: 8px;
     margin-top: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
-
-#postSubmitButton:hover {
+form[action="/add-comment"] button:hover {
     background-color: #154574;
 }
 
-#postSubmitButton:focus {
-    outline: none;
-    box-shadow: 0px 0px 6px rgba(29, 86, 148, 0.5);
+/* likedelete */
+.post-actions,
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+.like-btn {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    padding: 4px;
+}
+.like-btn:hover {
+    transform: scale(1.15);
+}
+.like-btn.liked {
+    color: #ff0000;
+}
+.delete-post-btn,
+.delete-comment-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #c00;
+    font-size: 18px;
+    transition: color 0.2s ease;
+    padding: 4px;
+}
+.delete-post-btn:hover,
+.delete-comment-btn:hover {
+    color: #f00;
+    text-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
+}
+
+.show-more-btn {
+    background-color: #e7f0ff;
+    color: #1d5694;
+    padding: 6px 12px;
+    border: 1px solid #1d5694;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+.show-more-btn:hover {
+    background-color: #d0e5ff;
+}
+.hidden-comment {
+    display: none;
 }
 
 @media (max-width: 768px) {
@@ -348,16 +371,13 @@ form[action="/add-comment"] button:hover {
     .post-container {
         width: 90%;
     }
-
     .editor-toolbar {
         flex-wrap: wrap;
     }
-
     .editor-toolbar button {
         padding: 6px;
         font-size: 13px;
     }
-
     #postSubmitButton {
         padding: 10px;
         font-size: 15px;

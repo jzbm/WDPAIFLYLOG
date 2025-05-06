@@ -1,7 +1,7 @@
 main {
     max-width: 1000px;
     margin: 40px auto;
-    padding: 20px;
+    padding: 5px;
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -41,7 +41,7 @@ button {
     background-color: #e74c3c;
     color: #fff;
     border: none;
-    padding: 6px 12px;
+    padding: 8px 12px;
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
@@ -54,3 +54,13 @@ button:hover {
 form {
     display: inline;
 }
+
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .table-responsive table {
+        min-width: 600px; 
+    }
+}
+

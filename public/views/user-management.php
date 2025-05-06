@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>User Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/public/styles/main.css" rel="stylesheet">
     <link href="/public/styles/navbar.css" rel="stylesheet">
     <link href="/public/styles/user-management.css" rel="stylesheet">
@@ -20,6 +21,7 @@
             <button type="submit" style="margin-left: 10px;">Szukaj</button>
         </form>        
         <?php if (!empty($users)): ?>
+            <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
@@ -32,10 +34,10 @@
                 <tbody>
                     <?php foreach ($users as $user): ?>
                         <tr>
-                            <td><?= htmlspecialchars($user['email']) ?></td>
-                            <td><?= htmlspecialchars($user['nickname']) ?></td>
-                            <td><?= htmlspecialchars($user['role']) ?></td>
-                            <td>
+                            <td data-label="Email"><?= htmlspecialchars($user['email']) ?></td>
+                            <td data-label="Nickname"><?= htmlspecialchars($user['nickname']) ?></td>
+                            <td data-label="Role"><?= htmlspecialchars($user['role']) ?></td>
+                            <td data-label="Action">
                                 <?php if ($user['email'] !== $_SESSION['user']): ?>
                                     <form method="POST" action="/delete-user" onsubmit="return confirm('Na pewno usunąć tego użytkownika?');">
                                         <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
@@ -45,10 +47,11 @@
                                     (Twój profil)
                                 <?php endif; ?>
                             </td>
-                            
                         </tr>
+
                     <?php endforeach; ?>
                 </tbody>
+             </div>
             </table>
         <?php else: ?>
             <p>No users found.</p>
