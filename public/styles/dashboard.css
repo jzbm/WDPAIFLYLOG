@@ -10,7 +10,6 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
     padding: 10px;
 }
 
@@ -108,7 +107,7 @@ main {
     border: 1px solid #e0e0e0;
 }
 
-/*Formularz Dodawania Postu */
+/* Formularz Dodawania Postu */
 .post-container {
     width: 100%;
     max-width: 600px;
@@ -284,7 +283,7 @@ form[action="/add-comment"] {
     margin-top: 15px;
 }
 form[action="/add-comment"] textarea {
-    width: 100%;
+    width: 98%;
     padding: 10px;
     font-size: 15px;
     border: 1px solid #ccc;
@@ -364,6 +363,41 @@ form[action="/add-comment"] button:hover {
 }
 .hidden-comment {
     display: none;
+}
+
+/* js add new post*/
+.toggle-form-btn {
+    background-color: #1d5694;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 20px;
+}
+.toggle-form-btn:hover {
+    background-color: #154574;
+}
+
+.post-container {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin: 0 auto;
+    padding: 0 20px;
+    transition:
+      max-height 2s ease,
+      opacity 2s ease,
+      padding 2s ease;
+}
+
+.post-container.show {
+    max-height: 1000px;
+    opacity: 1;
+    padding: 20px;      
 }
 
 @media (max-width: 768px) {

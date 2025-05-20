@@ -1,30 +1,29 @@
 <?php
 
 class User {
-    private $id;
-    private $email;
-    private $password;
-    private $nickname;
-    private $roleId;
-    private $avatar;
+    private int    $id;
+    private string $email;
+    private string $password;
+    private string $nickname;
+    private string $roleName; // zamiast roleId
+    private ?string $avatar;
 
     public function __construct(
         int $id,
         string $email,
         string $password,
         string $nickname,
-        int $roleId,
-        string $avatar = null
+        string $roleName, 
+        ?string $avatar = null
     ) {
-        $this->id = $id;
-        $this->email = $email;
+        $this->id       = $id;
+        $this->email    = $email;
         $this->password = $password;
         $this->nickname = $nickname;
-        $this->roleId = $roleId;
-        $this->avatar = $avatar;
+        $this->roleName = $roleName; 
+        $this->avatar   = $avatar;
     }
 
-  
     public function getId(): int
     {
         return $this->id;
@@ -45,9 +44,9 @@ class User {
         return $this->nickname;
     }
 
-    public function getRoleId(): int
+    public function getRoleName(): string
     {
-        return $this->roleId;
+        return $this->roleName;
     }
 
     public function getAvatar(): string {
@@ -82,9 +81,9 @@ class User {
         $this->nickname = $nickname;
     }
 
-    public function setRoleId(int $roleId): void
+    public function setRoleName(string $roleName): void
     {
-        $this->roleId = $roleId;
+        $this->roleName = $roleName;
     }
 
     public function setAvatar(?string $avatar): void

@@ -89,3 +89,7 @@
         flex: 1;
     }
 }
+
+.nav-item.has-unread i.fa-bell {
+    color: #dc3545;             /* czerwony kolor dzwonka */
+}

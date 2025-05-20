@@ -17,7 +17,6 @@ class CommentRepository {
     }
 
     public function addComment($postId, $userId, $content) {
-        // Dodaj komentarz do bazy
         $stmt = $this->database->prepare('
             INSERT INTO comments (post_id, user_id, content) 
             VALUES (:postId, :userId, :content)

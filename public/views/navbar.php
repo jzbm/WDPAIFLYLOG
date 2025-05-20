@@ -33,11 +33,8 @@
                 <i class="fa-solid fa-user"></i> Profile
             </a>
 
-            <a href="/notifications" class="nav-item">
+            <a href="/notifications" class="nav-item<?= $unreadCount>0 ? ' has-unread' : '' ?>">
                 <i class="fa-solid fa-bell"></i> Notifications
-                <?php if ($unreadCount > 0): ?>
-                    <span class="notification-badge"><?= $unreadCount ?></span>
-                <?php endif; ?>
             </a>
 
             <a href="/messages" class="nav-item">

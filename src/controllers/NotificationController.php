@@ -17,8 +17,9 @@ class NotificationController extends AppController {
             exit();
         }
 
-        $userId = $this->get_user_id();
-        $notifications = $this->notificationRepository->getNotificationsForUser($userId);
+        $userId = $this->getLoggedInUserId();            // nowa metoda
+        $notifications = $this->notificationRepository
+                              ->getNotificationsForUser($userId);
 
         $this->render('notifications', [
             'notifications' => $notifications
@@ -31,21 +32,9 @@ class NotificationController extends AppController {
             exit();
         }
     
-        $userId = $this->get_user_id();
+        $userId = $this->getLoggedInUserId();
         $this->notificationRepository->markAllAsRead($userId);
         header("Location: /notifications");
         exit();
-    }
-    
-
-    private function get_user_id() {
-        $stmt = $this->notificationRepository->getDatabase()->prepare('
-            SELECT id FROM auth WHERE email = :email
-        ');
-        $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
-        $stmt->execute();
-
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $user['id'] ?? null;
     }
 }

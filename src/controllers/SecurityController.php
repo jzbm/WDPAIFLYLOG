@@ -15,17 +15,16 @@ class SecurityController extends AppController {
         $error = null;
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $email = $_POST['email'];
+            $email    = $_POST['email'];
             $password = $_POST['password'];
 
             $auth = $this->userRepository->getAuthByEmail($email);
             if ($auth && password_verify($password, $auth['password'])) {
                 $user = $this->userRepository->getUserById($auth['id']);
-
-                $_SESSION['user'] = $auth['email'];
-                $_SESSION['user_id'] = $auth['id'];
+                $_SESSION['user']     = $auth['email'];
+                $_SESSION['user_id']  = $auth['id'];
                 $_SESSION['nickname'] = $user['nickname'];
-                $_SESSION['role'] = $this->userRepository->getUserRoleById($auth['id']);
+                $_SESSION['role']     = strtolower($user['role']);
 
                 header("Location: /dashboard");
                 exit();
@@ -62,8 +61,12 @@ class SecurityController extends AppController {
                     $error = "Email already in use!";
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                    $userId = $this->userRepository->createAuth($email, $hashedPassword);
-                    $this->userRepository->createUser($userId, $nickname);
+
+                    // Tworzymy użytkownika i odczytujemy jego ID
+                    $userId = $this->userRepository->createUser($nickname);
+
+                    // Tworzymy auth z tym ID, emailem i hasłem
+                    $this->userRepository->createAuth($userId, $email, $hashedPassword);
 
                     header("Location: /login");
                     exit();

@@ -30,10 +30,9 @@ class CommentController extends AppController {
 
                 $authorId = $this->commentRepository->getPostAuthorId($postId);
                 if ($authorId && $authorId !== $userId) {
-                    require_once __DIR__ . '/../repository/NotificationRepository.php';
                     $notificationRepo = new NotificationRepository();
     
-                    $nickname = $this->commentRepository->getUserNicknameById($userId); // ta metoda musi byc
+                    $nickname = $this->commentRepository->getUserNicknameById($userId);
                     $message = "Użytkownik <strong>$nickname</strong> skomentował <a href='/dashboard#post-$postId'>twój post</a>.";
     
                     $notificationRepo->createNotification($authorId, $message);

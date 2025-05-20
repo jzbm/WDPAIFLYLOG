@@ -9,14 +9,15 @@
     <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
     <script src="/public/js/comments.js" defer></script>
     <script src="/public/js/like.js" defer></script>
-
+    <script src="/public/js/toggleAddPost.js" defer></script>  
     <title>DASHBOARD</title>
 </head>
 <body>
-        <?php include 'navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
     <main>
         <?php if (isset($_SESSION['user'])): ?>
-            <div class="post-container">
+            <button id="toggle-post-form" class="toggle-form-btn">Dodaj nowy wpis</button>
+            <div id="post-form-container" class="post-container">
                 <h2>DODAJ WPIS</h2>
                 <form method="POST" action="/add-post" onsubmit="submitForm()" enctype="multipart/form-data">
                     <input type="text" name="title" placeholder="Tytuł" required />
@@ -32,7 +33,7 @@
                     <input type="hidden" name="content" id="content" required>
 
                     <input type="file" name="image" accept="image/*">
-                    <button id="postSubmitButton" type="submit">Dodaj Post</button>
+                    <button id="postSubmitButton" type="submit">Dodaj Wpis</button>
                 </form>
             </div>
         <?php endif; ?>

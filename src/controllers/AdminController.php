@@ -11,7 +11,7 @@ class AdminController extends AppController {
     public function __construct() {
         parent::__construct();
         $this->userRepository = new UserRepository();
-        $this->db = Database::getInstance()->connect();
+        $this->db             = Database::getInstance()->connect();
     }
 
     public function user_management() {
@@ -39,8 +39,7 @@ class AdminController extends AppController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'])) {
             $userId = (int)$_POST['user_id'];
 
-            // zabezpiecznie
-            if ($userId === (int)$this->get_user_id()) {
+            if ($userId === $this->getLoggedInUserId()) { // zmiana
                 http_response_code(400);
                 die("You cannot delete yourself.");
             }
@@ -49,14 +48,5 @@ class AdminController extends AppController {
             header("Location: /user-management");
             exit();
         }
-    }
-
-    private function get_user_id() {
-        $stmt = $this->db->prepare('SELECT id FROM auth WHERE email = :email');
-        $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
-        $stmt->execute();
-
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $user['id'] ?? null;
     }
 }

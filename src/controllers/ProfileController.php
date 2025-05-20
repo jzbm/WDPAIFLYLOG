@@ -2,110 +2,82 @@
 
 require_once 'AppController.php';
 require_once __DIR__ . '/../repository/FlightRepository.php';
+require_once __DIR__ . '/../repository/UserRepository.php';
 require_once __DIR__ . '/../models/User.php';
 
 class ProfileController extends AppController {
     private FlightRepository $flightRepository;
+    private UserRepository   $userRepository;
 
     public function __construct() {
         parent::__construct();
         $this->flightRepository = new FlightRepository();
+        $this->userRepository   = new UserRepository();
     }
 
     public function profile() {
         if (!isset($_SESSION['user'])) {
-            header("Location: /login");
-            exit();
+            header('Location: /login');
+            exit;
         }
-    
-        $userId = $this->get_user_id();
-        $userData = $this->get_user_data();
-        $flights = $this->flightRepository->getFlightsByUserId($userId);
-        $totalFlightTime = $this->flightRepository->getTotalFlightTimeByUserId($userId);
-    
-        $favouriteAircraft = $this->flightRepository->getMostUsedAircraft($userId);
-        $favouriteAirport = $this->flightRepository->getMostUsedAirport($userId);
-    
+
+        $userId   = $_SESSION['user_id'];
+        $userData = $this->userRepository->getUserById($userId);
+        $flights            = $this->flightRepository->getFlightsByUserId($userId);
+        $totalFlightTime    = $this->flightRepository->getTotalFlightTimeByUserId($userId);
+        $favouriteAircraft  = $this->flightRepository->getMostUsedAircraft($userId) ?? 'No data';
+        $favouriteAirport   = $this->flightRepository->getMostUsedAirport($userId)  ?? 'No data';
 
         $user = new User(
             $userId,
             $userData['email'],
-            '', 
-            $userData['nickname'],
-            0,
-            $userData['avatar']
+            '',
+            $userData['nickname'],        
+            strtolower($userData['role']),
+            $userData['avatar'] ?? null
         );
-    
+
         $this->render('profile', [
-            'user' => $user,
-            'flights' => $flights,
-            'totalFlightTime' => $totalFlightTime,
-            'favouriteAircraft' => $favouriteAircraft ?? 'No data',
-            'favouriteAirport' => $favouriteAirport ?? 'No data'
+            'user'               => $user,
+            'flights'            => $flights,
+            'totalFlightTime'    => $totalFlightTime,
+            'favouriteAircraft'  => $favouriteAircraft,
+            'favouriteAirport'   => $favouriteAirport,
         ]);
     }
-    
 
-    public function upload_Avatar() {
+    public function uploadAvatar() {
         if (!isset($_SESSION['user'])) {
-            header("Location: /login");
-            exit();
+            header('Location: /login');
+            exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
-            $userId = $this->get_user_id();
+            $auth   = $this->userRepository->getAuthByEmail($_SESSION['user']);
+            $userId = (int)$auth['id'];
 
-            $targetDir = "uploads/avatars/";
-            if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0777, true);
+            $dir = 'uploads/avatars/';
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777, true);
             }
 
-            $fileName = basename($_FILES['avatar']['name']);
-            $targetFilePath = $targetDir . $userId . "_" . $fileName;
-            $fileType = strtolower(pathinfo($targetFilePath, PATHINFO_EXTENSION));
+            $filename = basename($_FILES['avatar']['name']);
+            $ext      = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $allowed  = ['jpg','jpeg','png','gif'];
 
-            $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-
-            if (in_array($fileType, $allowedTypes)) {
-                if (move_uploaded_file($_FILES['avatar']['tmp_name'], $targetFilePath)) {
-                    $this->flightRepository->updateUserAvatar($userId, $targetFilePath);
-                    header("Location: /profile");
-                    exit();
-                } else {
-                    echo "Błąd podczas przesyłania pliku!";
-                }
-            } else {
-                echo "Niedozwolony format pliku!";
+            if (!in_array($ext, $allowed)) {
+                echo 'Niedozwolony format pliku!';
+                return;
             }
+
+            $target = $dir . $userId . '_' . $filename;
+            if (!move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
+                echo 'Błąd podczas przesyłania pliku!';
+                return;
+            }
+            $this->userRepository->updateUserAvatar($userId, $target);
+            header('Location: /profile');
+            exit;
         }
-    }
-
-    private function get_user_data(): array {
-        $stmt = $this->flightRepository->getDatabase()->prepare('
-            SELECT u.nickname, u.avatar, a.email
-            FROM users u
-            JOIN auth a ON u.id = a.id
-            WHERE a.email = :email
-        ');
-        $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    private function get_user_id(): int {
-        $stmt = $this->flightRepository->getDatabase()->prepare('
-            SELECT id FROM auth WHERE email = :email
-        ');
-        $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
-        $stmt->execute();
-
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$user) {
-            die("User not found!");
-        }
-
-        return $user['id'];
     }
 }
