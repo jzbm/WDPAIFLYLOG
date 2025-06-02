@@ -76,43 +76,33 @@ class MessageRepository {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    
-
-    public function getUserByNickname($nickname) {
-        $stmt = $this->database->prepare('SELECT id FROM users WHERE nickname = :nickname LIMIT 1');
-        $stmt->bindParam(':nickname', $nickname, PDO::PARAM_STR);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-
     public function getMessagesBetweenUsers($userId1, $userId2) {
-    $stmt = $this->database->prepare(
-        'SELECT * FROM messages 
-         WHERE (sender_id = :user1 AND receiver_id = :user2)
-            OR (sender_id = :user2 AND receiver_id = :user1)
-         ORDER BY created_at ASC'
-    );
-
-    $stmt->execute([
-        'user1' => $userId1,
-        'user2' => $userId2
-    ]);
-
-    $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $result = [];
-
-    foreach ($messages as $message) {
-        $result[] = new Message(
-            $message['id'],
-            $message['sender_id'],
-            $message['receiver_id'],
-            $message['content'],
-            $message['created_at']
+        $stmt = $this->database->prepare(
+            'SELECT * FROM messages 
+             WHERE (sender_id = :user1 AND receiver_id = :user2)
+                OR (sender_id = :user2 AND receiver_id = :user1)
+             ORDER BY created_at ASC'
         );
-    }
 
-    return $result;
-}
+        $stmt->execute([
+            'user1' => $userId1,
+            'user2' => $userId2
+        ]);
+
+        $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+
+        foreach ($messages as $message) {
+            $result[] = new Message(
+                $message['id'],
+                $message['sender_id'],
+                $message['receiver_id'],
+                $message['content'],
+                $message['created_at']
+            );
+        }
+
+        return $result;
+    }
 
 }

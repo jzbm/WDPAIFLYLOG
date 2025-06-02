@@ -88,10 +88,31 @@ class UserRepository {
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
     public function deleteUserById(int $id): void {
-        $this->db->prepare('
-            DELETE FROM users
-             WHERE id = :id
-        ')->execute([':id' => $id]);
+        try {
+            $this->db->beginTransaction();
+
+     
+            $this->db->prepare('DELETE FROM comments WHERE user_id = :id')->execute([':id' => $id]);
+     
+            $this->db->prepare('DELETE FROM likes WHERE user_id = :id')->execute([':id' => $id]);
+          
+            $this->db->prepare('DELETE FROM posts WHERE user_id = :id')->execute([':id' => $id]);
+  
+            $this->db->prepare('DELETE FROM messages WHERE sender_id = :id OR receiver_id = :id')->execute([':id' => $id]);
+   
+            $this->db->prepare('DELETE FROM notifications WHERE user_id = :id')->execute([':id' => $id]);
+
+            $this->db->prepare('DELETE FROM flights WHERE user_id = :id')->execute([':id' => $id]);
+
+            $this->db->prepare('DELETE FROM users WHERE id = :id')->execute([':id' => $id]);
+
+            $this->db->prepare('DELETE FROM auth WHERE id = :id')->execute([':id' => $id]);
+
+            $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     public function updateUserAvatar(int $userId, string $avatarPath): bool

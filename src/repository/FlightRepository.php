@@ -42,9 +42,18 @@ class FlightRepository
 
     public function deleteFlight(int $flightId, int $userId): bool
     {
-        return $this->db
-            ->prepare('DELETE FROM flights WHERE id = :fid AND user_id = :uid')
-            ->execute([':fid' => $flightId, ':uid' => $userId]);
+        try {
+            $this->db->beginTransaction();
+            $result = $this->db
+                ->prepare('DELETE FROM flights WHERE id = :fid AND user_id = :uid')
+                ->execute([':fid' => $flightId, ':uid' => $userId]);
+
+            $this->db->commit();
+            return $result;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     public function getFlightsByUserId(int $userId): array

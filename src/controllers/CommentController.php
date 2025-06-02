@@ -32,7 +32,7 @@ class CommentController extends AppController {
                 if ($authorId && $authorId !== $userId) {
                     $notificationRepo = new NotificationRepository();
     
-                    $nickname = $this->commentRepository->getUserNicknameById($userId);
+                    $nickname = $this->userRepository->getUserById($userId)['nickname'] ?? 'Unknown';
                     $message = "User <strong>$nickname</strong> commented on <a href='/dashboard#post-$postId'>your post</a>.";
     
                     $notificationRepo->createNotification($authorId, $message);

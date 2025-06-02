@@ -17,28 +17,31 @@ class CommentRepository {
     }
 
     public function addComment($postId, $userId, $content) {
-        $stmt = $this->database->prepare('
-            INSERT INTO comments (post_id, user_id, content) 
-            VALUES (:postId, :userId, :content)
-        ');
+        try {
+            $this->database->beginTransaction();
 
-        $stmt->bindParam(':postId', $postId, PDO::PARAM_INT);
-        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
-        $stmt->bindParam(':content', $content, PDO::PARAM_STR);
-        $stmt->execute();
-    }
+            $stmt = $this->database->prepare('
+                INSERT INTO comments (post_id, user_id, content) 
+                VALUES (:postId, :userId, :content)
+            ');
+            $stmt->bindParam(':postId', $postId, PDO::PARAM_INT);
+            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+            $stmt->bindParam(':content', $content, PDO::PARAM_STR);
+            $stmt->execute();
+            $postAuthorId = $this->getPostAuthorId($postId);
+            if ($postAuthorId && $postAuthorId != $userId) {
+                $this->notificationRepository->addNotification(
+                    $postAuthorId,
+                    'New comment on your post.'
+                );
+            }
 
-    public function getUserNicknameById($userId) {
-        $stmt = $this->database->prepare('
-            SELECT nickname FROM users WHERE id = :id
-        ');
-        $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
-        $stmt->execute();
-    
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['nickname'] ?? 'Nieznany';
+            $this->database->commit();
+        } catch (Exception $e) {
+            $this->database->rollBack();
+            throw $e;
+        }
     }
-    
 
     public function getCommentsByPostId($postId) {
         $stmt = $this->database->prepare('
