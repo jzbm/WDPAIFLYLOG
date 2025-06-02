@@ -35,7 +35,7 @@ if (!empty($selectedUserId)) {
 <main class="messages-main <?= empty($selectedUserId) ? 'mobile-sidebar-active' : 'mobile-chat-active' ?>">
     <div class="chat-panel">
         <div class="chat-header">
-            <button id="back-to-sidebar" class="back-button">&larr; Wróć</button>
+            <button id="back-to-sidebar" class="back-button">&larr; Back</button>
             <?php if (!empty($selectedUser)): ?>
             <div class="chat-user-info">
                 <img class="chat-avatar" src="<?= !empty($selectedUser['avatar']) ? htmlspecialchars($selectedUser['avatar']) : '../uploads/avatars/default.png' ?>" alt="avatar">
@@ -50,23 +50,23 @@ if (!empty($selectedUserId)) {
 
             <form method="POST" action="/send-message" class="send-form">
                 <input type="hidden" name="receiver_id" value="<?= htmlspecialchars($selectedUserId) ?>" />
-                <input type="text" name="content" placeholder="Napisz wiadomość..." required />
+                <input type="text" name="content" placeholder="Type a message..." required />
                 <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
             </form>
         <?php else: ?>
             <div class="chat-placeholder">
-                <img src="/public/images/empty-chat.svg" alt="Brak wiadomości" />
-                <p class="no-history">Brak historii wiadomości</p>
-                <p class="instruction">Wybierz rozmowę z listy po prawej lub wyszukaj użytkownika, aby rozpocząć czat.</p>
+                <img src="/public/images/empty-chat.svg" alt="No messages" />
+                <p class="no-history">No message history</p>
+                <p class="instruction">Select a conversation from the list on the right or search for a user to start chatting.</p>
             </div>
         <?php endif; ?>
     </div>
 
     <aside class="sidebar">
-        <input type="text" id="user-search" placeholder="Szukaj użytkownika..." />
+        <input type="text" id="user-search" placeholder="Search user..." />
         <ul class="user-search-results" id="user-search-results" style="display: none;"></ul>
 
-        <h3>Ostatnie rozmowy</h3>
+        <h3>Recent conversations</h3>
         <ul class="user-list" id="user-list">
             <?php foreach ($recentUsers as $user): ?>
                 <li class="user-item">
@@ -75,7 +75,7 @@ if (!empty($selectedUserId)) {
                         <div class="user-info">
                             <p class="nickname"><?= htmlspecialchars($user['nickname']) ?></p>
                             <p class="last-message">
-                                <?= isset($user['lastMessage']) ? htmlspecialchars($user['lastMessage']) : 'Brak wiadomości' ?>
+                                <?= isset($user['lastMessage']) ? htmlspecialchars($user['lastMessage']) : 'No messages' ?>
                             </p>
                         </div>
                         <span class="timestamp"><?= htmlspecialchars($user['timestamp'] ?? '') ?></span>

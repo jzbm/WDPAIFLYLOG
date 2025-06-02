@@ -67,7 +67,7 @@
                 <img src="<?= htmlspecialchars($user->getAvatar()); ?>" alt="Avatar" class="profile-avatar">
                 <form method="POST" action="/upload-avatar" enctype="multipart/form-data">
                     <input type="file" id="avatar-upload" name="avatar" accept="image/*" hidden required>
-                    <label for="avatar-upload" class="upload-button">Wybierz avatar</label>
+                    <label for="avatar-upload" class="upload-button">Choose Avatar</label>
                     <button type="submit" class="upload-avatar-btn">Change Avatar</button>
                 </form>
             </div>

@@ -37,16 +37,21 @@ class ProfileController extends AppController {
             $userData['avatar'] ?? null
         );
 
+        // ProfileController::profile()
+        require_once __DIR__ . '/NotificationController.php';
+        $unreadCount = (new NotificationController())->getUnreadCount();
+
         $this->render('profile', [
             'user'               => $user,
             'flights'            => $flights,
             'totalFlightTime'    => $totalFlightTime,
             'favouriteAircraft'  => $favouriteAircraft,
             'favouriteAirport'   => $favouriteAirport,
+            'unreadCount'        => $unreadCount
         ]);
     }
 
-    public function uploadAvatar() {
+    public function upload_avatar() {
         if (!isset($_SESSION['user'])) {
             header('Location: /login');
             exit;
@@ -66,13 +71,13 @@ class ProfileController extends AppController {
             $allowed  = ['jpg','jpeg','png','gif'];
 
             if (!in_array($ext, $allowed)) {
-                echo 'Niedozwolony format pliku!';
+                echo 'File format not allowed!';
                 return;
             }
 
             $target = $dir . $userId . '_' . $filename;
             if (!move_uploaded_file($_FILES['avatar']['tmp_name'], $target)) {
-                echo 'Błąd podczas przesyłania pliku!';
+                echo 'Error uploading file!';
                 return;
             }
             $this->userRepository->updateUserAvatar($userId, $target);

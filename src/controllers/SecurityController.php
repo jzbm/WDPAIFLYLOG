@@ -61,14 +61,9 @@ class SecurityController extends AppController {
                     $error = "Email already in use!";
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-                    // Tworzymy użytkownika i odczytujemy jego ID
                     $userId = $this->userRepository->createUser($nickname);
-
-                    // Tworzymy auth z tym ID, emailem i hasłem
                     $this->userRepository->createAuth($userId, $email, $hashedPassword);
-
-                    header("Location: /login");
+                    header("Location: /login?registered=1&user_id=$userId");
                     exit();
                 }
             }

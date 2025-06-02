@@ -14,9 +14,7 @@ class PostRepository {
     public function getDatabase() {
         return $this->database;
     }
-    
-
-    public function add_Post($userId, $title, $content, $imagePath = null) {
+        public function add_Post($userId, $title, $content, $imagePath = null) {
         $stmt = $this->database->prepare('
             INSERT INTO posts (user_id, title, content, image) 
             VALUES (:userId, :title, :content, :image)
@@ -27,6 +25,8 @@ class PostRepository {
         $stmt->bindParam(':content', $content, PDO::PARAM_STR);
         $stmt->bindParam(':image', $imagePath, PDO::PARAM_STR);
         $stmt->execute();
+        
+        return $this->database->lastInsertId();
     }
 
     public function get_Posts($userId = null) {
@@ -63,9 +63,46 @@ class PostRepository {
             $postObject->setIsLikedByUser((bool) $post['is_liked']);
     
             $result[] = $postObject;
-        }
+        }        return $result;
+    }
     
-        return $result;
+    public function getPostById($postId, $userId = null) {
+        $stmt = $this->database->prepare('
+            SELECT p.id, p.user_id, p.title, p.content, p.image, p.created_at, u.nickname, u.avatar,
+                   (SELECT COUNT(*) FROM likes WHERE post_id = p.id) AS likes_count,
+                   COALESCE((
+                       SELECT 1 FROM likes WHERE post_id = p.id AND user_id = :userId
+                   ), 0) AS is_liked
+            FROM posts p 
+            JOIN users u ON p.user_id = u.id 
+            WHERE p.id = :postId
+        ');
+    
+        $stmt->bindValue(':postId', $postId, PDO::PARAM_INT);
+        $stmt->bindValue(':userId', $userId ?? 0, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        $post = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$post) {
+            return null;
+        }
+        
+        $postObject = new Post(
+            $post['id'],
+            $post['user_id'],
+            $post['title'],
+            $post['created_at'],
+            $post['content'],
+            $post['nickname'],
+            $post['image'] ?? null,
+            $post['avatar'] ?? null
+        );
+
+        $postObject->setLikesCount((int) $post['likes_count']);
+        $postObject->setIsLikedByUser((bool) $post['is_liked']);
+
+        return $postObject;
     }
     
     

@@ -9,30 +9,26 @@ async function toggleLike(postId, button) {
 
     if (response.ok) {
         const result = await response.json();
-
+        button.innerHTML = `<i class="fa-solid fa-heart"></i> ${result.likesCount}`;
         if (result.liked) {
-            button.innerHTML = `❤️ ${result.likesCount}`;
             button.classList.add('liked');
-            localStorage.setItem(`liked_post_${postId}`, 'true');
         } else {
-            button.innerHTML = `🤍 ${result.likesCount}`;
             button.classList.remove('liked');
-            localStorage.setItem(`liked_post_${postId}`, 'false');
         }
     } else {
         console.error('Failed to like post');
     }
 }
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.like-btn').forEach(button => {
         const postId = button.closest('form').querySelector('input[name="post_id"]').value;
         const isLiked = localStorage.getItem(`liked_post_${postId}`) === 'true';
-
+        const likesCount = button.textContent.replace(/\D+/g, '');
+        button.innerHTML = `<i class="fa-solid fa-heart"></i> ${likesCount}`;
         if (isLiked) {
-            button.innerHTML = `❤️ ${button.innerHTML.replace(/\D+/g, '')}`;
             button.classList.add('liked');
         } else {
-            button.innerHTML = `🤍 ${button.innerHTML.replace(/\D+/g, '')}`;
             button.classList.remove('liked');
         }
     });

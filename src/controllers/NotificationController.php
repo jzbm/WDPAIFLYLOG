@@ -4,7 +4,7 @@ require_once 'AppController.php';
 require_once __DIR__ . '/../repository/NotificationRepository.php';
 
 class NotificationController extends AppController {
-    private $notificationRepository;
+    private NotificationRepository $notificationRepository;
 
     public function __construct() {
         parent::__construct();
@@ -17,12 +17,13 @@ class NotificationController extends AppController {
             exit();
         }
 
-        $userId = $this->getLoggedInUserId();            // nowa metoda
-        $notifications = $this->notificationRepository
-                              ->getNotificationsForUser($userId);
+        $userId         = $this->getLoggedInUserId();
+        $notifications  = $this->notificationRepository->getNotificationsForUser($userId);
+        $unreadCount    = $this->getUnreadCount();
 
         $this->render('notifications', [
-            'notifications' => $notifications
+            'notifications' => $notifications,
+            'unreadCount'   => $unreadCount
         ]);
     }
 
@@ -36,5 +37,13 @@ class NotificationController extends AppController {
         $this->notificationRepository->markAllAsRead($userId);
         header("Location: /notifications");
         exit();
+    }
+
+    public function getUnreadCount(): int {
+        if (!isset($_SESSION['user'])) {
+            return 0;
+        }
+        $userId = $this->getLoggedInUserId();
+        return $this->notificationRepository->countUnreadNotifications($userId);
     }
 }

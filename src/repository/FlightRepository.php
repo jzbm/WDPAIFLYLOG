@@ -47,12 +47,6 @@ class FlightRepository
             ->execute([':fid' => $flightId, ':uid' => $userId]);
     }
 
-    /**
-     * Pobiera loty z widoku v_flights i ręcznie tworzy obiekty Flight
-     *
-     * @param int $userId
-     * @return Flight[]
-     */
     public function getFlightsByUserId(int $userId): array
     {
         $stmt = $this->db->prepare(
@@ -82,7 +76,10 @@ class FlightRepository
     public function getTotalFlightTimeByUserId(int $userId): string
     {
         $interval = $this->callFunction('get_total_flight_time', $userId);
-        return substr($interval, 0, 5); // formatuje hh mm 
+        if ($interval === null) {
+            return '0:00';
+        }
+        return substr($interval, 0, 5); // formatuje hh:mm
     }
 
     public function getMostUsedAirport(int $userId): ?string
@@ -93,6 +90,12 @@ class FlightRepository
     public function getMostUsedAircraft(int $userId): ?string
     {
         return $this->callFunction('get_most_used_aircraft', $userId);
+    }
+
+    public function getGlobalFlightStats(): ?array
+    {
+        $stmt = $this->db->query('SELECT * FROM public.v_global_flight_stats');
+        return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
     }
 
     private function callFunction(string $fn, int $userId): ?string

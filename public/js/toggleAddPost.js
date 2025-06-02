@@ -3,12 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('post-form-container');
 
     btn.addEventListener('click', () => {
-        form.classList.add('show');
-        btn.style.transition = 'opacity 0.3s ease';
-        btn.style.opacity = '0';
-        btn.style.pointerEvents = 'none';
-        btn.addEventListener('transitionend', () => {
-            btn.style.display = 'none';
-        }, { once: true });
+        form.classList.toggle('show');
+        btn.style.display = 'none';
     });
 });

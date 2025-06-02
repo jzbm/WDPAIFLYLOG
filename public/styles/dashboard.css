@@ -13,10 +13,10 @@ main {
     padding: 10px;
 }
 
-/* Style dla Kart/Postów */
+/* Styles posts,card */
 .card {
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
     margin: 10px auto;
     padding: 15px;
     background-color: #ffffff;
@@ -48,7 +48,7 @@ main {
 .card p a:hover {
     color: #10385d;
 }
-/* Header Posta i Informacje o Autorze */
+/* Header posts, author info */
 .post-header {
     display: flex;
     justify-content: space-between;
@@ -107,10 +107,10 @@ main {
     border: 1px solid #e0e0e0;
 }
 
-/* Formularz Dodawania Postu */
+/* posts */
 .post-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 100%;
     margin: 20px auto;
     background-color: #ffffff;
     padding: 20px;
@@ -278,7 +278,7 @@ main {
     margin: 0;
 }
 
-/* Komentarze - Formularz dodawania komentarza */
+/* comments*/
 form[action="/add-comment"] {
     margin-top: 15px;
 }
@@ -400,20 +400,249 @@ form[action="/add-comment"] button:hover {
     padding: 20px;      
 }
 
+.add-post-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 24px;
+    max-width: 575px;
+}
+
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+  padding: 20px;
+  align-items: flex-start;
+}
+
+.posts-section { grid-column: 1; }
+.right-column { grid-column: 2; display: flex; flex-direction: column; align-items: stretch; }
+
+.toggle-form-btn,
+#post-form-container {
+  margin-top: 20px;
+}
+
+.stats-section {
+  flex: 1; 
+  background: #fff; 
+  padding: 24px; 
+  border-radius: 12px; 
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  max-width: 100%;
+  margin-top: 10px;
+  position: sticky;
+  top: 20px;
+}
+.stats-section h2 {
+  margin: 0 0 16px;
+  font-size: 1.5rem;
+  color: #1d5694;
+  border-bottom: 2px solid #1d5694;
+  padding-bottom: 8px;
+}
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.stats-table th,
+.stats-table td {
+  padding: 10px 12px;
+}
+.stats-table th {
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  background: #f4f7fb;
+}
+.stats-table td {
+  color: #555;
+}
+.stats-table tr + tr th,
+.stats-table tr + tr td {
+  border-top: 1px solid #e5e5e5;
+}
+.stats-table tr:nth-child(even) td {
+  background: #fafafb;
+}
+.stats-table small {
+  color: #888;
+  font-style: italic;
+  margin-left: 4px;
+}
+.no-stats {
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+  margin: 20px 0 0;
+}
+
+.posts-section .toggle-form-btn {
+  display: block;
+  margin: 0 auto 20px;
+}
+
 @media (max-width: 768px) {
+    .dashboard-layout {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 0;
+    }
+    .right-column {
+        order: -1;
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 20px;
+        margin-top: 0;
+    }
+    .posts-section {
+        order: 0;
+    }
+    .posts-section,
+    .right-column {
+        grid-column: unset;
+        width: 100%;
+        max-width: 100%;
+    }
+    .right-column {
+        margin-top: 20px;
+    }
     .card,
     .post-container {
-        width: 90%;
+        width: 100%;
+        margin: 0 0 20px 0;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+    .post-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .post-header h2 {
+        font-size: 18px;
+        margin-bottom: 0;
+    }
+    .post-header > div {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        margin-top: 0;
+        margin-left: 0;
+    }
+    .author-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .avatar {
+        width: 40px;
+        height: 40px;
+    }
+    .post-image {
+        max-height: 250px;
+        margin-top: 10px;
+    }
+    .comments-container {
+        gap: 12px;
+    }
+    .comment {
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+    .comment-author .avatar {
+        width: 28px;
+        height: 28px;
+    }
+    .post-container input[type="text"],
+    .post-container input[type="file"],
+    .post-container textarea,
+    form[action="/add-comment"] textarea {
+        font-size: 16px;
+        padding: 12px;
+        margin-bottom: 12px;
     }
     .editor-toolbar {
         flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
     }
     .editor-toolbar button {
-        padding: 6px;
-        font-size: 13px;
+        padding: 8px;
+        font-size: 14px;
+        min-width: 36px;
+        height: 36px;
     }
-    #postSubmitButton {
-        padding: 10px;
+    #editor {
+        min-height: 100px;
+        font-size: 16px;
+        padding: 12px;
+    }
+    #postSubmitButton,
+    form[action="/add-comment"] button,
+    .toggle-form-btn {
+        padding: 12px 16px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .show-more-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+        width: 100%;
+        margin-top: 12px;
+    }
+    .like-btn {
+        font-size: 20px;
+        padding: 8px;
+    }
+    
+    .delete-post-btn,
+    .delete-comment-btn {
+        font-size: 16px;
+        padding: 8px;
+    }
+    .stats-section {
+        position: static;
+        margin-top: 0;
+        padding: 20px;
+    }
+    
+    .stats-section h2 {
+        font-size: 1.3rem;
+    }
+    
+    .stats-table {
+        font-size: 0.9rem;
+    }
+    
+    .stats-table th,
+    .stats-table td {
+        padding: 8px 10px;
+    }
+    .add-post-container {
+        margin-top: 20px;
+        max-width: 100%;
+    }
+    
+    .post-container {
+        max-width: 100%;
+    }
+    .card p {
         font-size: 15px;
+        line-height: 1.5;
+    }
+    
+    .nickname {
+        font-size: 14px;
+    }
+    
+    .post-date,
+    .comment-date {
+        font-size: 11px;
     }
 }

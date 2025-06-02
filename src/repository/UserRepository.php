@@ -94,4 +94,17 @@ class UserRepository {
              WHERE id = :id
         ')->execute([':id' => $id]);
     }
+
+    public function updateUserAvatar(int $userId, string $avatarPath): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE users
+                SET avatar = :avatar
+              WHERE id     = :id'
+        );
+        return $stmt->execute([
+            ':avatar' => $avatarPath,
+            ':id'     => $userId
+        ]);
+    }
 }

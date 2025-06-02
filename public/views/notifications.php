@@ -8,7 +8,7 @@
     <link href="/public/styles/notifications.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
     <script src="/public/js/notifications.js" defer></script>
-    <title>Powiadomienia</title>
+    <title>Notifications</title>
 </head>
 <body>
     <nav>
@@ -16,13 +16,13 @@
     </nav>
 
     <main>
-        <h2 style="text-align: center; color: #1d5694; margin-top: 30px;">Twoje powiadomienia</h2>
+        <h2 style="text-align: center; color: #1d5694; margin-top: 30px;">Your notifications</h2>
 
         <?php if (!empty($notifications)): ?>
             <div class="notification-container">
                 <form method="POST" action="/mark-all-as-read" style="text-align: right;">
                     <button type="submit" class="mark-all-btn">
-                        <i class="fa-solid fa-check-double"></i> Oznacz wszystkie jako przeczytane
+                        <i class="fa-solid fa-check-double"></i> Mark all as read
                     </button>
                 </form>
 
@@ -39,7 +39,7 @@
             <?php endforeach; ?>            
             </div>
         <?php else: ?>
-            <p style="text-align: center; color: #888;">Brak powiadomień.</p>
+            <p style="text-align: center; color: #888;">No notifications.</p>
         <?php endif; ?>
 
         <?php if (count($notifications) > 7): ?>

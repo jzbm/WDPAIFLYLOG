@@ -36,7 +36,7 @@ class FlightController extends AppController {
                     $error = "Landing time must be after departure time!";
                 } else {
                     $flightTime = (int)(($landingTs - $departureTs) / 60);
-                    $userId     = $this->getLoggedInUserId();    // zmiana
+                    $userId     = $this->getLoggedInUserId();   
                     $this->flightRepository->addFlight(
                         $userId, $departureAirport, $landingAirport,
                         $aircraft, $flightTime, $departureTime, $landingTime
@@ -56,7 +56,7 @@ class FlightController extends AppController {
 
         $data     = json_decode(file_get_contents('php://input'), true);
         $flightId = $data['flightId'] ?? null;
-        $userId   = $this->getLoggedInUserId();          // zmiana
+        $userId   = $this->getLoggedInUserId();         
 
         if (!$flightId) {
             http_response_code(400);
@@ -75,7 +75,7 @@ class FlightController extends AppController {
     }
 
     public function get_total_flight_time() {
-        $userId = $this->getLoggedInUserId();            // zmiana
+        $userId = $this->getLoggedInUserId();          
         return $this->flightRepository->getTotalFlightTimeByUserId($userId);
     }
 }

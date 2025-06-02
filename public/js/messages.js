@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 li.className = "user-item";
                 li.innerHTML = `
                     <a href="/messages?user=${user.id}" style="text-decoration: none; color: inherit;">
-                        <img src="${user.avatar || '/public/images/default-avatar.png'}" alt="avatar">
+                        <img src="${user.avatar || '/uploads/avatars/default.png'}" alt="avatar">
                         <div class="user-info">
                             <p class="nickname">${user.nickname}</p>
                             <p class="last-message">Brak wiadomości</p>
@@ -44,26 +44,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (typeof selectedUserId !== 'undefined') {
+        let isUserScrolling = false;
+        let lastScrollTop = 0;
         function fetchMessages() {
             fetch(`/get-messages-ajax?user=${selectedUserId}`)
                 .then(res => res.json())
                 .then(messages => {
                     const container = document.getElementById("chat-messages");
                     if (!container) return;
+                    const isAtBottom = Math.abs(container.scrollTop + container.clientHeight - container.scrollHeight) < 5;
+                    let prevScrollHeight = container.scrollHeight;
+                    let prevScrollTop = container.scrollTop;
                     container.innerHTML = "";
-
                     messages.forEach(msg => {
                         const div = document.createElement("div");
                         div.className = "message-bubble " + (msg.sender_id == currentUserId ? "sent" : "received");
                         div.innerHTML = `<p>${msg.content}</p><span>${new Date(msg.created_at).toLocaleString()}</span>`;
                         container.appendChild(div);
                     });
-
-                    container.scrollTop = container.scrollHeight;
+                    if (isAtBottom) {
+                        container.scrollTop = container.scrollHeight;
+                    } else {
+                        container.scrollTop = container.scrollHeight - prevScrollHeight + prevScrollTop;
+                    }
                 });
         }
 
-        setInterval(fetchMessages, 5000);
+        setInterval(fetchMessages, 500);
         fetchMessages();
     }
 });
@@ -139,4 +146,34 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+});
+
+// wysylanie ajax
+
+document.addEventListener("DOMContentLoaded", function () {
+    const sendForm = document.querySelector(".send-form");
+    const chatMessages = document.getElementById("chat-messages");
+    if (sendForm && chatMessages) {
+        sendForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const formData = new FormData(sendForm);
+            const content = formData.get("content").trim();
+            if (!content) return;
+            fetch("/send-message", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Message sending error");
+                return res.text();
+            })
+            .then(() => {
+                sendForm.reset();
+                if (typeof fetchMessages === "function") fetchMessages();
+            })
+            .catch(() => {
+                alert("Failed to send message.");
+            });
+        });
+    }
 });

@@ -74,6 +74,29 @@ body.auth-page {
     text-align: center;
 }
 
+.notification.success {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    z-index: 9999;
+    background: #4bb543;
+    color: #fff;
+    padding: 18px 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    font-size: 1.1rem;
+    font-weight: 600;
+    opacity: 1;
+    transition: opacity 0.5s;
+    pointer-events: none;
+    min-width: 220px;
+    text-align: center;
+}
+
+.notification.success.hide {
+    opacity: 0;
+}
+
 @media (max-width: 480px) {
     .auth-container {
         padding: 20px;
@@ -94,5 +117,16 @@ body.auth-page {
 
     .auth-container p {
         font-size: 13px;
+    }
+}
+
+@media (max-width: 600px) {
+    .notification.success {
+        right: 10px;
+        left: 10px;
+        top: 15px;
+        min-width: unset;
+        padding: 14px 10px;
+        font-size: 1rem;
     }
 }

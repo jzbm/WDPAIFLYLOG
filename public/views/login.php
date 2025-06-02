@@ -9,7 +9,7 @@
     <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
     <link href="/public/styles/main.css" rel="stylesheet">
     <link href="/public/styles/auth.css" rel="stylesheet">
-
+    <script src="/public/js/regnot.js" defer></script>
 
     <title>LOGIN</title>
 </head>
@@ -17,6 +17,18 @@
     <div class="auth-container">
         <h1>LOGIN</h1>
         <p>Don't have an account? <a href="/register">Create one</a></p>
+        <?php
+        if (isset($_GET['registered']) && isset($_GET['user_id'])) {
+            require_once __DIR__ . '/../../src/repository/NotificationRepository.php';
+            $notificationRepo = new NotificationRepository();
+            $userId = (int)$_GET['user_id'];
+            $notifications = $notificationRepo->getNotificationsForUser($userId);
+            if (!empty($notifications)) {
+                $latest = $notifications[0];
+                echo "<div class='notification success' id='regnot'>" . htmlspecialchars($latest->getContent()) . "</div>";
+            }
+        }
+        ?>
         <form method="POST" action="/login">
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>

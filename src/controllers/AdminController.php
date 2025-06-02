@@ -3,6 +3,7 @@
 require_once 'AppController.php';
 require_once __DIR__ . '/../repository/UserRepository.php';
 require_once __DIR__ . '/../repository/Database.php';
+require_once __DIR__ . '/NotificationController.php';
 
 class AdminController extends AppController {
     private $userRepository;
@@ -27,7 +28,13 @@ class AdminController extends AppController {
         } else {
             $users = $this->userRepository->getAllUsersWithRoles();
         }        
-        $this->render('user-management', ['users' => $users]);
+
+        $unreadCount = (new NotificationController())->getUnreadCount();
+
+        $this->render('user-management', [
+            'users'       => $users,
+            'unreadCount' => $unreadCount
+        ]);
     }
 
     public function delete_user() {

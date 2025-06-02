@@ -3,6 +3,7 @@
 require_once 'AppController.php';
 require_once __DIR__ . '/../repository/PostRepository.php';
 require_once __DIR__ . '/../repository/CommentRepository.php';
+require_once __DIR__ . '/../repository/FlightRepository.php';
 
 class PostController extends AppController {
     private $postRepository;
@@ -23,7 +24,19 @@ class PostController extends AppController {
             $post->setComments($comments);
         }
 
-        $this->render('dashboard', ['posts' => $posts]);
+        // pobranie statystyk globalnych
+        $statsRepo = new FlightRepository();
+        $stats     = $statsRepo->getGlobalFlightStats();
+
+        require_once __DIR__ . '/NotificationController.php';
+        $notifCtrl   = new NotificationController();
+        $unreadCount = $notifCtrl->getUnreadCount();
+
+        $this->render('dashboard', [
+            'posts'       => $posts,
+            'stats'       => $stats,
+            'unreadCount'=> $unreadCount
+        ]);
     }
 
     public function add_post() {

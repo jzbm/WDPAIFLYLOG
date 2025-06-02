@@ -15,7 +15,6 @@ class AppController {
             include $templatePath;
         }
     }
-
     // wspólna metoda
     protected function getLoggedInUserId(): ?int {
         $stmt = Database::getInstance()

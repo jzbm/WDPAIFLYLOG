@@ -66,34 +66,12 @@ class MessageRepository {
 
     public function getRecentConversationsForUser($userId) {
         $stmt = $this->database->prepare(
-            "SELECT 
-                u.id,
-                u.nickname,
-                u.avatar,
-                m.content AS lastMessage,
-                m.created_at AS timestamp
-            FROM (
-                SELECT 
-                    LEAST(sender_id, receiver_id) AS user1,
-                    GREATEST(sender_id, receiver_id) AS user2,
-                    MAX(created_at) AS latest
-                FROM messages
-                GROUP BY LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id)
-            ) AS conversation_groups
-            INNER JOIN messages m 
-                ON ((LEAST(m.sender_id, m.receiver_id) = conversation_groups.user1)
-                 AND (GREATEST(m.sender_id, m.receiver_id) = conversation_groups.user2)
-                 AND m.created_at = conversation_groups.latest)
-            INNER JOIN users u
-                ON (
-                    (conversation_groups.user1 = :userId AND u.id = conversation_groups.user2)
-                    OR
-                    (conversation_groups.user2 = :userId AND u.id = conversation_groups.user1)
-                )
-            WHERE :userId IN (conversation_groups.user1, conversation_groups.user2)
-            ORDER BY m.created_at DESC"
+            "SELECT id, nickname, avatar, lastMessage, timestamp
+             FROM recent_conversations
+             WHERE (user1 = :userId OR user2 = :userId)
+               AND id != :userId
+             ORDER BY timestamp DESC"
         );
-    
         $stmt->execute(['userId' => $userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

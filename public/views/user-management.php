@@ -17,8 +17,8 @@
     <main>
         <h1>Control Panel</h1>
         <form method="GET" action="/user-management" style="margin-bottom: 20px; text-align: center;">
-            <input type="text" name="nickname" placeholder="Szukaj po nicku" value="<?= htmlspecialchars($_GET['nickname'] ?? '') ?>" style="padding: 8px; width: 200px; border-radius: 6px; border: 1px solid #ccc;">
-            <button type="submit" style="margin-left: 10px;">Szukaj</button>
+            <input type="text" name="nickname" placeholder="Search by nickname" value="<?= htmlspecialchars($_GET['nickname'] ?? '') ?>" style="padding: 8px; width: 200px; border-radius: 6px; border: 1px solid #ccc;">
+            <button type="submit" style="margin-left: 10px;">Search</button>
         </form>        
         <?php if (!empty($users)): ?>
             <div class="table-responsive">
@@ -39,12 +39,12 @@
                             <td data-label="Role"><?= htmlspecialchars($user['role']) ?></td>
                             <td data-label="Action">
                                 <?php if ($user['email'] !== $_SESSION['user']): ?>
-                                    <form method="POST" action="/delete-user" onsubmit="return confirm('Na pewno usunąć tego użytkownika?');">
+                                    <form method="POST" action="/delete-user" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                         <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
                                         <button type="submit">Delete</button>
                                     </form>
                                 <?php else: ?>
-                                    (Twój profil)
+                                    (Your profile)
                                 <?php endif; ?>
                             </td>
                         </tr>

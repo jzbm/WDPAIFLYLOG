@@ -24,7 +24,7 @@ class CommentController extends AppController {
             $content = $_POST['content'];
     
             if (!empty($postId) && !empty($content)) {
-                $userId = $this->get_user_id();
+                $userId = $this->getLoggedInUserId();
     
                 $this->commentRepository->addComment($postId, $userId, $content);
 
@@ -33,7 +33,7 @@ class CommentController extends AppController {
                     $notificationRepo = new NotificationRepository();
     
                     $nickname = $this->commentRepository->getUserNicknameById($userId);
-                    $message = "Użytkownik <strong>$nickname</strong> skomentował <a href='/dashboard#post-$postId'>twój post</a>.";
+                    $message = "User <strong>$nickname</strong> commented on <a href='/dashboard#post-$postId'>your post</a>.";
     
                     $notificationRepo->createNotification($authorId, $message);
                 }
@@ -42,19 +42,5 @@ class CommentController extends AppController {
                 exit();
             }
         }
-    }
-    
-
-    private function get_user_id() {
-        $db = Database::getInstance()->connect();
-
-        $stmt = $db->prepare('
-            SELECT id FROM auth WHERE email = :email
-        ');
-        $stmt->bindParam(':email', $_SESSION['user'], PDO::PARAM_STR);
-        $stmt->execute();
-
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $user['id'] ?? null;
     }
 }

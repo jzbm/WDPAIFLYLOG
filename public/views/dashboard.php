@@ -14,123 +14,162 @@
 </head>
 <body>
     <?php include 'navbar.php'; ?>
-    <main>
-        <?php if (isset($_SESSION['user'])): ?>
-            <button id="toggle-post-form" class="toggle-form-btn">Dodaj nowy wpis</button>
-            <div id="post-form-container" class="post-container">
-                <h2>DODAJ WPIS</h2>
-                <form method="POST" action="/add-post" onsubmit="submitForm()" enctype="multipart/form-data">
-                    <input type="text" name="title" placeholder="Tytuł" required />
 
-                    <div class="editor-toolbar">
-                        <button type="button" class="editor-btn" onclick="formatText('bold')"><b>B</b></button>
-                        <button type="button" class="editor-btn" onclick="formatText('italic')"><i>I</i></button>
-                        <button type="button" class="editor-btn" onclick="formatText('underline')"><u>U</u></button>
-                        <button type="button" class="editor-btn" onclick="createLink()">🔗</button>
-                    </div>
+    <div class="dashboard-layout">
+        <section class="posts-section">
+            <?php if (!empty($posts)): ?>
+                <?php foreach ($posts as $post): ?>
+                    <div class="card" id="post-<?= $post->getId(); ?>">
+                        <div class="post-header">
+                            <h2><?= htmlspecialchars($post->getTitle()) ?></h2>
 
-                    <div id="editor" class="empty" contenteditable="true" data-placeholder="Dodaj treść..."></div>
-                    <input type="hidden" name="content" id="content" required>
-
-                    <input type="file" name="image" accept="image/*">
-                    <button id="postSubmitButton" type="submit">Dodaj Wpis</button>
-                </form>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!empty($posts)): ?>
-            <?php foreach ($posts as $post): ?>
-                <div class="card" id="post-<?= $post->getId(); ?>">
-                    <div class="post-header">
-                        <h2><?= htmlspecialchars($post->getTitle()) ?></h2>
-
-                        <div style="display: flex; gap: 8px;">
-                            <form method="POST" action="/like-post" onsubmit="event.preventDefault(); toggleLike(<?= $post->getId(); ?>, this.querySelector('.like-btn'))">
-                                <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
-                                <button type="submit" class="like-btn <?= $post->isLikedByUser() ? 'liked' : ''; ?>">
-                                    <i class="<?= $post->isLikedByUser() ? 'fa-solid fa-heart' : 'fa-regular fa-heart' ?>"></i>
-                                    <?= $post->getLikesCount(); ?>
-                                </button>
-                            </form>
-
-                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                                <form method="POST" action="/delete-post" onsubmit="return confirm('Na pewno usunąć ten post?');">
+                            <div style="display: flex; gap: 8px;">
+                                <form method="POST" action="/like-post" onsubmit="event.preventDefault(); toggleLike(<?= $post->getId(); ?>, this.querySelector('.like-btn'))">
                                     <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
-                                    <button type="submit" class="delete-post-btn" title="Usuń post">
-                                        <i class="fa-solid fa-trash"></i>
+                                    <button type="submit" class="like-btn <?= $post->isLikedByUser() ? 'liked' : ''; ?>">
+                                        <i class="<?= $post->isLikedByUser() ? 'fa-solid fa-heart' : 'fa-regular fa-heart' ?>"></i>
+                                        <?= $post->getLikesCount(); ?>
                                     </button>
                                 </form>
-                            <?php endif; ?>
-                        </div>
-                    </div>
 
-                    <p><?= $post->getFormattedContent(); ?></p>
-
-                    <?php if ($post->getImage()): ?>
-                        <img src="<?= $post->getImage(); ?>" alt="Post Image" class="post-image">
-                    <?php endif; ?>
-
-                    <div class="author-info">
-                        <img class="avatar" src="<?= htmlspecialchars($post->getAvatar()); ?>" alt="avatar">
-                        <div class="author-meta">
-                            <p class="nickname"><?= htmlspecialchars($post->getNickname()); ?></p>
-                            <p class="post-date">
-                                <?php
-                                    $created = $post->getCreatedAt();
-                                    echo $created ? date('d.m.Y, H:i', strtotime($created)) : '';
-                                ?>
-                            </p>
-                        </div>
-                    </div>
-
-                    <?php 
-                        $comments = $post->getComments(); 
-                        $totalComments = count($comments);
-                    ?>
-                    <?php if (!empty($comments)): ?>
-                        <div class="comments-container">
-                            <?php 
-                                $maxVisibleComments = 2;
-                                foreach ($comments as $index => $comment): 
-                                    $hiddenClass = $index >= $maxVisibleComments ? 'hidden-comment' : '';
-                            ?>
-                                <div class="comment <?= $hiddenClass; ?>">
-                                    <div class="comment-author">
-                                        <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
-                                        <div class="author-meta">
-                                            <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
-                                            <p class="comment-date">
-                                                <?php
-                                                    $commentDate = $comment->getCreatedAt();
-                                                    echo $commentDate ? date('d.m.Y, H:i', strtotime($commentDate)) : '';
-                                                ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <p><?= htmlspecialchars($comment->getContent()); ?></p>
-                                </div>
-                            <?php endforeach; ?>
+                                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                                    <form method="POST" action="/delete-post" onsubmit="return confirm('Na pewno usunąć ten post?');">
+                                        <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
+                                        <button type="submit" class="delete-post-btn" title="Usuń post">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+                            </div>
                         </div>
 
-                        <?php if ($totalComments > $maxVisibleComments): ?>
-                            <button class="show-more-btn" onclick="toggleComments(this, <?= $totalComments - $maxVisibleComments; ?>)">
-                                Pokaż więcej komentarzy: <?= $totalComments - $maxVisibleComments; ?>
-                            </button>
+                        <p><?= $post->getFormattedContent(); ?></p>
+
+                        <?php if ($post->getImage()): ?>
+                            <img src="<?= $post->getImage(); ?>" alt="Post Image" class="post-image">
                         <?php endif; ?>
-                    <?php endif; ?>
 
-                    <?php if (isset($_SESSION['user'])): ?>
-                        <form method="POST" action="/add-comment">
-                            <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
-                            <textarea name="content" placeholder="Dodaj komentarz..." required></textarea>
-                            <button type="submit">Dodaj komentarz</button>
-                        </form>
+                        <div class="author-info">
+                            <img class="avatar" src="<?= htmlspecialchars($post->getAvatar()); ?>" alt="avatar">
+                            <div class="author-meta">
+                                <p class="nickname"><?= htmlspecialchars($post->getNickname()); ?></p>
+                                <p class="post-date">
+                                    <?php
+                                        $created = $post->getCreatedAt();
+                                        echo $created ? date('d.m.Y, H:i', strtotime($created)) : '';
+                                    ?>
+                                </p>
+                            </div>
+                        </div>
+
+                        <?php 
+                            $comments = $post->getComments(); 
+                            $totalComments = count($comments);
+                        ?>
+                        <?php if (!empty($comments)): ?>
+                            <div class="comments-container">
+                                <?php 
+                                    $maxVisibleComments = 2;
+                                    foreach ($comments as $index => $comment): 
+                                        $hiddenClass = $index >= $maxVisibleComments ? 'hidden-comment' : '';
+                                ?>
+                                    <div class="comment <?= $hiddenClass; ?>">
+                                        <div class="comment-author">
+                                            <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
+                                            <div class="author-meta">
+                                                <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
+                                                <p class="comment-date">
+                                                    <?php
+                                                        $commentDate = $comment->getCreatedAt();
+                                                        echo $commentDate ? date('d.m.Y, H:i', strtotime($commentDate)) : '';
+                                                    ?>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <p><?= htmlspecialchars($comment->getContent()); ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                            <?php if ($totalComments > $maxVisibleComments): ?>
+                                <button class="show-more-btn" onclick="toggleComments(this, <?= $totalComments - $maxVisibleComments; ?>)">
+                                    Show more comments: <?= $totalComments - $maxVisibleComments; ?>
+                                </button>
+                            <?php endif; ?>
+                        <?php endif; ?>
+
+                        <?php if (isset($_SESSION['user'])): ?>
+                            <form method="POST" action="/add-comment">
+                                <input type="hidden" name="post_id" value="<?= $post->getId(); ?>">
+                                <textarea name="content" placeholder="Add a comment..." required></textarea>
+                                <button type="submit">Add comment</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No posts yet.</p>
+            <?php endif; ?>
+        </section>
+
+        <div class="right-column">
+            <section class="stats-section">
+                <h2>Global Flight Statistics</h2>
+                <?php if (!empty($stats)): ?>
+                <table class="stats-table">
+                    <tr>
+                        <th>Total flights:</th>
+                        <td><?= htmlspecialchars($stats['total_flights']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Flights last 7 days:</th>
+                        <td><?= htmlspecialchars($stats['flights_last_7_days']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Top airport:</th>
+                        <td><?= htmlspecialchars($stats['most_used_airport']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Top aircraft:</th>
+                        <td><?= htmlspecialchars($stats['most_used_aircraft']) ?></td>
+                    </tr>
+                    <?php if (!empty($stats['top_pilot_nickname'])): ?>
+                    <tr>
+                        <th>Top pilot:</th>
+                        <td>
+                            <?= htmlspecialchars($stats['top_pilot_nickname']) ?>
+                            <small>(<?= htmlspecialchars($stats['top_pilot_total_minutes']) ?> min)</small>
+                        </td>
+                    </tr>
                     <?php endif; ?>
+                </table>
+                <?php else: ?>
+                    <p class="no-stats">No statistics available.</p>
+                <?php endif; ?>
+            </section>
+
+            <?php if (isset($_SESSION['user'])): ?>
+            <div class="add-post-container">
+                <button id="toggle-post-form" class="toggle-form-btn">Add new post</button>
+                <div id="post-form-container" class="post-container">
+                    <h2>ADD POST</h2>
+                    <form method="POST" action="/add-post" onsubmit="submitForm()" enctype="multipart/form-data">
+                        <input type="text" name="title" placeholder="Title" required />
+                        <div class="editor-toolbar">
+                            <button type="button" class="editor-btn" onclick="formatText('bold')"><b>B</b></button>
+                            <button type="button" class="editor-btn" onclick="formatText('italic')"><i>I</i></button>
+                            <button type="button" class="editor-btn" onclick="formatText('underline')"><u>U</u></button>
+                            <button type="button" class="editor-btn" onclick="createLink()">🔗</button>
+                        </div>
+                        <div id="editor" class="empty" contenteditable="true" data-placeholder="Add content..."></div>
+                        <input type="hidden" name="content" id="content" required>
+                        <input type="file" name="image" accept="image/*">
+                        <button id="postSubmitButton" type="submit">Add Post</button>
+                    </form>
                 </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p>No posts yet.</p>
-        <?php endif; ?>
-    </main>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
 </body>
 </html>

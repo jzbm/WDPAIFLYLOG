@@ -2,6 +2,7 @@
 
 require_once 'AppController.php';
 require_once __DIR__ . '/../repository/MessageRepository.php';
+require_once __DIR__ . '/NotificationController.php';
 
 class MessageController extends AppController {
     private $messageRepository;
@@ -28,11 +29,15 @@ class MessageController extends AppController {
             $selectedMessages = $this->messageRepository->getMessagesBetweenUsers($userId, $selectedUserId);
         }
 
+        $notifCtrl   = new NotificationController();
+        $unreadCount = $notifCtrl->getUnreadCount();
+
         $this->render('messages', [
             'recentUsers' => $recentUsers,
             'users' => $users,
             'selectedMessages' => $selectedMessages,
-            'selectedUserId' => $selectedUserId
+            'selectedUserId' => $selectedUserId,
+            'unreadCount'=> $unreadCount
         ]);
     }
 
@@ -52,7 +57,7 @@ class MessageController extends AppController {
                 header("Location: /messages?user=" . $receiverId);
                 exit();
             } else {
-                $_SESSION['error_message'] = "Nie znaleziono użytkownika lub wiadomość jest pusta.";
+                $_SESSION['error_message'] = "User not found or message is empty.";
                 header("Location: /messages");
                 exit();
             }
