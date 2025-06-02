@@ -18,20 +18,14 @@ class UserRepository {
         return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
     }
 
-    public function createUser(string $nickname): int {
+    public function createUser(string $nickname, int $roleId = 1): int {
         $stmt = $this->db->prepare('
-            INSERT INTO users (nickname)
-            VALUES (:nickname)
+            INSERT INTO users (nickname, role_id)
+            VALUES (:nickname, :role_id)
             RETURNING id
         ');
-        $stmt->execute([':nickname' => $nickname]);
+        $stmt->execute([':nickname' => $nickname, ':role_id' => $roleId]);
         $userId = (int)$stmt->fetchColumn();
-
-        $this->db->prepare('
-            INSERT INTO user_roles (user_id, role_id)
-            VALUES (:uid, 1)
-        ')->execute([':uid' => $userId]);
-
         return $userId;
     }
     public function createAuth(int $userId, string $email, string $hashedPassword): void {
@@ -48,13 +42,15 @@ class UserRepository {
     public function getUserById(int $id): ?array {
         $stmt = $this->db->prepare('
             SELECT 
-              user_id   AS id,
-              email,
-              nickname,
-              role_name AS role,
-              avatar
-            FROM v_users_with_roles
-           WHERE user_id = :id
+              u.id   AS id,
+              a.email,
+              u.nickname,
+              r.name AS role,
+              u.avatar
+            FROM users u
+            JOIN auth a ON a.id = u.id
+            LEFT JOIN roles r ON r.id = u.role_id
+           WHERE u.id = :id
         ');
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
@@ -64,26 +60,29 @@ class UserRepository {
         return $this->db
             ->query('
                 SELECT 
-                  user_id AS id,
-                  email,
-                  nickname,
-                  role_name AS role
-                  -- możesz też dodać avatar, jeśli potrzebujesz
-                FROM v_users_with_roles
-                ORDER BY user_id
+                  u.id AS id,
+                  a.email,
+                  u.nickname,
+                  r.name AS role
+                FROM users u
+                JOIN auth a ON a.id = u.id
+                LEFT JOIN roles r ON r.id = u.role_id
+                ORDER BY u.id
             ')
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
     public function getUsersByNickname(string $nickname): array {
         $stmt = $this->db->prepare('
             SELECT 
-              user_id AS id,
-              email,
-              nickname,
-              role_name AS role
-            FROM v_users_with_roles
-           WHERE nickname ILIKE :nick
-           ORDER BY nickname
+              u.id AS id,
+              a.email,
+              u.nickname,
+              r.name AS role
+            FROM users u
+            JOIN auth a ON a.id = u.id
+            LEFT JOIN roles r ON r.id = u.role_id
+           WHERE u.nickname ILIKE :nick
+           ORDER BY u.nickname
         ');
         $stmt->execute([':nick' => "%{$nickname}%"]);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
