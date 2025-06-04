@@ -150,29 +150,11 @@ class PostRepository {
     }
 
     public function deletePostById(int $postId): void {
-        try {
-            $this->database->beginTransaction();
-
-            // Usun komentarze
-            $stmt = $this->database->prepare('DELETE FROM comments WHERE post_id = :id');
-            $stmt->bindParam(':id', $postId, PDO::PARAM_INT);
-            $stmt->execute();
-
-            // Usum polubienia
-            $stmt = $this->database->prepare('DELETE FROM likes WHERE post_id = :id');
-            $stmt->bindParam(':id', $postId, PDO::PARAM_INT);
-            $stmt->execute();
-
-            // Usun post
-            $stmt = $this->database->prepare('DELETE FROM posts WHERE id = :id');
-            $stmt->bindParam(':id', $postId, PDO::PARAM_INT);
-            $stmt->execute();
-
-            $this->database->commit();
-        } catch (Exception $e) {
-            $this->database->rollBack();
-            throw $e;
-        }
+        $stmt = $this->database->prepare('
+            DELETE FROM posts WHERE id = :id
+        ');
+        $stmt->bindParam(':id', $postId, PDO::PARAM_INT);
+        $stmt->execute();
     }
 
     public function getPostAuthorId($postId) {

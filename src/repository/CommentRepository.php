@@ -28,14 +28,6 @@ class CommentRepository {
             $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
             $stmt->bindParam(':content', $content, PDO::PARAM_STR);
             $stmt->execute();
-            $postAuthorId = $this->getPostAuthorId($postId);
-            if ($postAuthorId && $postAuthorId != $userId) {
-                $this->notificationRepository->addNotification(
-                    $postAuthorId,
-                    'New comment on your post.'
-                );
-            }
-
             $this->database->commit();
         } catch (Exception $e) {
             $this->database->rollBack();
