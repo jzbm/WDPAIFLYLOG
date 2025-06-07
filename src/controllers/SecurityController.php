@@ -62,8 +62,7 @@ class SecurityController extends AppController {
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                     // Domyślna rola: 1 (USER)
-                    $userId = $this->userRepository->createUser($nickname, 1);
-                    $this->userRepository->createAuth($userId, $email, $hashedPassword);
+                    $userId = $this->userRepository->registerUser($nickname, $email, $hashedPassword, 1);
                     header("Location: /login?registered=1&user_id=$userId");
                     exit();
                 }

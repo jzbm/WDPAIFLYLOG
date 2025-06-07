@@ -17,28 +17,29 @@ class UserRepository {
         $stmt->execute([':email' => $email]);
         return $stmt->fetch(\PDO::FETCH_ASSOC) ?: null;
     }
-
-    public function createUser(string $nickname, int $roleId = 1): int {
-        $stmt = $this->db->prepare('
-            INSERT INTO users (nickname, role_id)
-            VALUES (:nickname, :role_id)
-            RETURNING id
-        ');
-        $stmt->execute([':nickname' => $nickname, ':role_id' => $roleId]);
-        $userId = (int)$stmt->fetchColumn();
-        return $userId;
+    public function registerUser(string $nickname, string $email, string $hashedPassword, int $roleId = 1): int {
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare(
+                'INSERT INTO users (nickname, role_id) VALUES (:nickname, :role_id) RETURNING id'
+            );
+            $stmt->execute([':nickname' => $nickname, ':role_id' => $roleId]);
+            $userId = (int)$stmt->fetchColumn();
+            $stmt2 = $this->db->prepare(
+                'INSERT INTO auth (id, email, password) VALUES (:id, :email, :password)'
+            );
+            $stmt2->execute([
+                ':id'       => $userId,
+                ':email'    => $email,
+                ':password' => $hashedPassword,
+            ]);
+            $this->db->commit();
+            return $userId;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
-    public function createAuth(int $userId, string $email, string $hashedPassword): void {
-        $this->db->prepare('
-            INSERT INTO auth (id, email, password)
-            VALUES (:id, :email, :password)
-        ')->execute([
-            ':id'       => $userId,
-            ':email'    => $email,
-            ':password' => $hashedPassword,
-        ]);
-    }
-
     public function getUserById(int $id): ?array {
         $stmt = $this->db->prepare('
             SELECT 
