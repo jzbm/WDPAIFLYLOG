@@ -283,7 +283,8 @@ form[action="/add-comment"] {
     margin-top: 15px;
 }
 form[action="/add-comment"] textarea {
-    width: 98%;
+    width: 100%;
+    box-sizing: border-box;
     padding: 10px;
     font-size: 15px;
     border: 1px solid #ccc;
