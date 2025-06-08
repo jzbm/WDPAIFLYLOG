@@ -82,7 +82,8 @@ create table messages (
     sender_id int not null references users(id) on delete cascade,
     receiver_id int not null references users(id) on delete cascade,
     content text not null,
-    created_at timestamp with time zone default now()
+    created_at timestamp with time zone default now(),
+    is_read boolean default false
 );
 
 -- powiadomienia
@@ -175,3 +176,33 @@ create trigger trg_notify_on_register
 after insert on users
 for each row
 execute procedure notify_on_register();
+
+DROP TABLE IF EXISTS users_history CASCADE;
+
+-- tabela historia
+CREATE TABLE users_history (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    nickname VARCHAR(100) NOT NULL,
+    role_id INT NOT NULL,
+    email VARCHAR(150),
+    deleted_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE OR REPLACE FUNCTION fn_archive_user() RETURNS trigger AS $$
+BEGIN
+    INSERT INTO users_history(user_id, nickname, role_id, email)
+    VALUES (
+        OLD.id,
+        OLD.nickname,
+        OLD.role_id,
+        (SELECT email FROM auth WHERE id = OLD.id)
+    );
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_archive_user
+BEFORE DELETE ON users
+FOR EACH ROW
+EXECUTE PROCEDURE fn_archive_user();

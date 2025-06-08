@@ -26,8 +26,12 @@
                 <i class="fa-solid fa-bell"></i> Notifications
             </a>
 
-            <a href="/messages" class="nav-item">
+            <?php $msgCount = $messageUnreadCount ?? 0; ?>
+            <a href="/messages" class="nav-item<?= $msgCount > 0 ? ' has-unread' : '' ?>">
                 <i class="fa-solid fa-envelope"></i> Messages
+                <?php if ($msgCount > 0): ?>
+                    <span class="badge"><?= $msgCount ?></span>
+                <?php endif; ?>
             </a>
 
             <a href="/logout" class="nav-item">

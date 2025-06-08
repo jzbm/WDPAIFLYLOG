@@ -69,13 +69,19 @@ if (!empty($selectedUserId)) {
         <h3>Recent conversations</h3>
         <ul class="user-list" id="user-list">
             <?php foreach ($recentUsers as $user): ?>
-                <li class="user-item">
+                <?php $activeClass = (isset($selectedUserId) && $user['id'] == $selectedUserId) ? 'active' : ''; ?>
+                <li class="user-item <?= $activeClass ?>">
                     <div class="user-item-link" data-user-id="<?= htmlspecialchars($user['id']) ?>">
                         <img src="<?= htmlspecialchars($user['avatar'] ?? '/uploads/avatars/default.png') ?>" alt="avatar">
                         <div class="user-info">
-                            <p class="nickname"><?= htmlspecialchars($user['nickname']) ?></p>
+                            <p class="nickname">
+                                <?= htmlspecialchars($user['nickname']) ?>
+                                <?php if (!empty($user['unreadCount'])): ?>
+                                    <span class="badge message-badge"><?= $user['unreadCount'] ?></span>
+                                <?php endif; ?>
+                            </p>
                             <p class="last-message">
-                                <?= isset($user['lastMessage']) ? htmlspecialchars($user['lastMessage']) : 'No messages' ?>
+                                <?= htmlspecialchars($user['lastMessage'] ?? '') ?>
                             </p>
                         </div>
                         <span class="timestamp"><?= htmlspecialchars($user['timestamp'] ?? '') ?></span>

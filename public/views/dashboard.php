@@ -10,6 +10,7 @@
     <script src="/public/js/comments.js" defer></script>
     <script src="/public/js/like.js" defer></script>
     <script src="/public/js/toggleAddPost.js" defer></script>  
+    <script src="/public/js/editor.js" defer></script>
     <title>DASHBOARD</title>
 </head>
 <body>
@@ -66,18 +67,15 @@
                             </div>
                         </div>
 
-                        <?php 
-                            $comments = $post->getComments(); 
-                            $totalComments = count($comments);
+                        <?php
+                            $postId = $post->getId();
+                            $visibleComments = $visibleCommentsMap[$postId] ?? [];
+                            $hiddenCount = $hiddenCountMap[$postId] ?? 0;
                         ?>
-                        <?php if (!empty($comments)): ?>
+                        <?php if (!empty($visibleComments) || !empty($hiddenCommentsMap[$postId])): ?>
                             <div class="comments-container">
-                                <?php 
-                                    $maxVisibleComments = 2;
-                                    foreach ($comments as $index => $comment): 
-                                        $hiddenClass = $index >= $maxVisibleComments ? 'hidden-comment' : '';
-                                ?>
-                                    <div class="comment <?= $hiddenClass; ?>">
+                                <?php foreach ($visibleComments as $comment): ?>
+                                    <div class="comment">
                                         <div class="comment-author">
                                             <a href="/messages?user=<?= $comment->getUserId(); ?>">
                                                 <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
@@ -97,11 +95,28 @@
                                         <p><?= htmlspecialchars($comment->getContent()); ?></p>
                                     </div>
                                 <?php endforeach; ?>
+                                <?php if (!empty($hiddenCommentsMap[$postId])): ?>
+                                    <?php foreach ($hiddenCommentsMap[$postId] as $comment): ?>
+                                        <div class="comment hidden-comment">
+                                            <div class="comment-author">
+                                                <a href="/messages?user=<?= $comment->getUserId(); ?>">
+                                                    <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
+                                                </a>
+                                                <div class="author-meta">
+                                                    <a href="/messages?user=<?= $comment->getUserId(); ?>">
+                                                        <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
+                                                    </a>
+                                                    <p class="comment-date"><?php echo $commentDate = $comment->getCreatedAt() ? date('d.m.Y, H:i', strtotime($comment->getCreatedAt())) : ''; ?></p>
+                                                </div>
+                                            </div>
+                                            <p><?= htmlspecialchars($comment->getContent()); ?></p>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
-
-                            <?php if ($totalComments > $maxVisibleComments): ?>
-                                <button class="show-more-btn" onclick="toggleComments(this, <?= $totalComments - $maxVisibleComments; ?>)">
-                                    Show more comments: <?= $totalComments - $maxVisibleComments; ?>
+                            <?php if ($hiddenCount > 0): ?>
+                                <button class="show-more-btn" onclick="toggleComments(this, <?= $hiddenCount; ?>)">
+                                    Show more comments: <?= $hiddenCount; ?>
                                 </button>
                             <?php endif; ?>
                         <?php endif; ?>

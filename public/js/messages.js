@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <img src="${user.avatar || '/uploads/avatars/default.png'}" alt="avatar">
                         <div class="user-info">
                             <p class="nickname">${user.nickname}</p>
-                            <p class="last-message">Brak wiadomości</p>
+                            <p class="last-message">No messages</p>
                         </div>
                         <span class="timestamp"></span>
                     </a>
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         }
 
-        setInterval(fetchMessages, 500);
+        setInterval(fetchMessages, 5000);
         fetchMessages();
     }
 });

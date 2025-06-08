@@ -17,18 +17,9 @@
     <div class="auth-container">
         <h1>LOGIN</h1>
         <p>Don't have an account? <a href="/register">Create one</a></p>
-        <?php
-        if (isset($_GET['registered']) && isset($_GET['user_id'])) {
-            require_once __DIR__ . '/../../src/repository/NotificationRepository.php';
-            $notificationRepo = new NotificationRepository();
-            $userId = (int)$_GET['user_id'];
-            $notifications = $notificationRepo->getNotificationsForUser($userId);
-            if (!empty($notifications)) {
-                $latest = $notifications[0];
-                echo "<div class='notification success' id='regnot'>" . htmlspecialchars($latest->getContent()) . "</div>";
-            }
-        }
-        ?>
+        <?php if (!empty($registrationNotification)): ?>
+            <div class="notification success" id="regnot"><?php echo $registrationNotification; ?></div>
+        <?php endif; ?>
         <form method="POST" action="/login">
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>

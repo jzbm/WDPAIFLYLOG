@@ -13,7 +13,17 @@ class SecurityController extends AppController {
 
     public function login() {
         $error = null;
-
+        $registrationNotification = null;
+        if ($_SERVER["REQUEST_METHOD"] === "GET" && isset($_GET['registered'], $_GET['user_id'])) {
+            require_once __DIR__ . '/../repository/NotificationRepository.php';
+            $notificationRepository = new NotificationRepository();
+            $userId = (int)
+                $_GET['user_id'];
+            $notifications = $notificationRepository->getNotificationsForUser($userId);
+            if (!empty($notifications)) {
+                $registrationNotification = htmlspecialchars($notifications[0]->getContent());
+            }
+        }
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $email    = $_POST['email'];
             $password = $_POST['password'];
@@ -32,8 +42,10 @@ class SecurityController extends AppController {
                 $error = "Invalid email or password!";
             }
         }
-
-        $this->render('login', ['error' => $error]);
+        $this->render('login', [
+            'error' => $error,
+            'registrationNotification' => $registrationNotification
+        ]);
     }
 
     public function logout() {
@@ -61,7 +73,7 @@ class SecurityController extends AppController {
                     $error = "Email already in use!";
                 } else {
                     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                    // Domyślna rola: 1 (USER)
+                    // Domyślna rola 1 user
                     $userId = $this->userRepository->registerUser($nickname, $email, $hashedPassword, 1);
                     header("Location: /login?registered=1&user_id=$userId");
                     exit();

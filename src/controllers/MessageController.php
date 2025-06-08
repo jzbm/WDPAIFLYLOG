@@ -20,6 +20,10 @@ class MessageController extends AppController {
 
         $userId = $_SESSION['user_id'];
         $recentUsers = $this->messageRepository->getRecentConversationsForUser($userId);
+        foreach ($recentUsers as &$u) {
+            $u['unreadCount'] = $this->messageRepository->countUnreadFrom($userId, $u['id']);
+        }
+        unset($u);
         $users = $this->messageRepository->getAllUsers();
 
         $selectedUserId = isset($_GET['user']) ? intval($_GET['user']) : null;
@@ -27,17 +31,20 @@ class MessageController extends AppController {
 
         if ($selectedUserId) {
             $selectedMessages = $this->messageRepository->getMessagesBetweenUsers($userId, $selectedUserId);
+            $this->messageRepository->markAsRead($userId, $selectedUserId);
         }
 
         $notifCtrl   = new NotificationController();
         $unreadCount = $notifCtrl->getUnreadCount();
 
+        $messageUnreadCount = $this->messageRepository->countUnread($userId);
         $this->render('messages', [
             'recentUsers' => $recentUsers,
             'users' => $users,
             'selectedMessages' => $selectedMessages,
             'selectedUserId' => $selectedUserId,
-            'unreadCount'=> $unreadCount
+            'unreadCount'=> $unreadCount,
+            'messageUnreadCount' => $messageUnreadCount,
         ]);
     }
 

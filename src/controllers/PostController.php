@@ -16,26 +16,29 @@ class PostController extends AppController {
     }
 
     public function dashboard() {
-        $userId = $this->getLoggedInUserId();           // zmiana
+        $userId = $this->getLoggedInUserId();
         $posts  = $this->postRepository->get_Posts($userId);
-
+        $visibleCommentsMap = [];
+        $hiddenCommentsMap = [];
+        $hiddenCountMap = [];
         foreach ($posts as $post) {
-            $comments = $this->commentRepository->getCommentsByPostId($post->getId());
-            $post->setComments($comments);
+            $allComments = $this->commentRepository->getCommentsByPostId($post->getId());
+            $post->setComments($allComments);
+            $visibleCommentsMap[$post->getId()] = array_slice($allComments, 0, 2);
+            $hiddenCommentsMap[$post->getId()] = array_slice($allComments, 2);
+            $hiddenCountMap[$post->getId()] = count($hiddenCommentsMap[$post->getId()]);
         }
 
         // pobranie statystyk globalnych
         $statsRepo = new FlightRepository();
         $stats     = $statsRepo->getGlobalFlightStats();
 
-        require_once __DIR__ . '/NotificationController.php';
-        $notifCtrl   = new NotificationController();
-        $unreadCount = $notifCtrl->getUnreadCount();
-
         $this->render('dashboard', [
-            'posts'       => $posts,
-            'stats'       => $stats,
-            'unreadCount'=> $unreadCount
+            'posts'               => $posts,
+            'stats'               => $stats,
+            'visibleCommentsMap'  => $visibleCommentsMap,
+            'hiddenCommentsMap'   => $hiddenCommentsMap,
+            'hiddenCountMap'      => $hiddenCountMap
         ]);
     }
 

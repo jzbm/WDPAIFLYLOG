@@ -205,6 +205,14 @@ h3 {
     background-color: #e8f1ff;
 }
 
+.user-item.active {
+    background-color: #e6f2ff;
+}
+
+.user-item.active .user-item-link {
+    font-weight: bold;
+}
+
 .user-item img {
     width: 42px;
     height: 42px;
@@ -395,4 +403,16 @@ h3 {
     font-weight: bold;
     color: #1d5694;
     font-size: 15px;
+}
+.user-list .message-badge {
+    background-color: #dc3545;
+    color: #ffffff;
+    border-radius: 50%;
+    padding: 3px 3px;
+    font-size: 0.75rem;
+    margin-left: 6px;
+    display: inline-block;
+    min-width: 1.2em;
+    text-align: center;
+    line-height: 1;
 }

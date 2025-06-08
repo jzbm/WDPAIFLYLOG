@@ -105,4 +105,30 @@ class MessageRepository {
         return $result;
     }
 
+    public function countUnread(int $userId): int {
+        $stmt = $this->database->prepare(
+            'SELECT COUNT(*) FROM messages WHERE receiver_id = :uid AND is_read = false'
+        );
+        $stmt->execute([':uid' => $userId]);
+        return (int)$stmt->fetchColumn();
+    }
+    
+    public function markAsRead(int $userId, int $otherId): void {
+        $stmt = $this->database->prepare(
+            'UPDATE messages SET is_read = true WHERE receiver_id = :uid AND sender_id = :other'
+        );
+        $stmt->execute([':uid' => $userId, ':other' => $otherId]);
+    }
+
+    public function countUnreadFrom(int $userId, int $otherId): int {
+        $stmt = $this->database->prepare(
+            'SELECT COUNT(*) FROM messages
+             WHERE receiver_id = :uid
+               AND sender_id   = :other
+               AND is_read     = false'
+        );
+        $stmt->execute([':uid' => $userId, ':other' => $otherId]);
+        return (int)$stmt->fetchColumn();
+    }
+
 }
