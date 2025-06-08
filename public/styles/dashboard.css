@@ -85,6 +85,11 @@ main {
     flex-direction: column;
     justify-content: center;
 }
+.author-meta a {
+    text-decoration: none;
+    color: inherit;
+}
+
 .nickname {
     font-weight: bold;
     font-size: 14px;
@@ -319,7 +324,7 @@ form[action="/add-comment"] button:hover {
 .like-btn {
     background: none;
     border: none;
-    color: #ff4d4d;
+    color: #888888; /* niepolubiony: szary */
     font-size: 22px;
     cursor: pointer;
     transition: transform 0.2s ease;
@@ -329,7 +334,7 @@ form[action="/add-comment"] button:hover {
     transform: scale(1.15);
 }
 .like-btn.liked {
-    color: #ff0000;
+    color: #e74c3c; /* polubiony: jaskrawoczerwony */
 }
 .delete-post-btn,
 .delete-comment-btn {

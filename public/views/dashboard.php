@@ -50,9 +50,13 @@
                         <?php endif; ?>
 
                         <div class="author-info">
-                            <img class="avatar" src="<?= htmlspecialchars($post->getAvatar()); ?>" alt="avatar">
+                            <a href="/messages?user=<?= $post->getUserId(); ?>">
+                                <img class="avatar" src="<?= htmlspecialchars($post->getAvatar()); ?>" alt="avatar">
+                            </a>
                             <div class="author-meta">
-                                <p class="nickname"><?= htmlspecialchars($post->getNickname()); ?></p>
+                                <a href="/messages?user=<?= $post->getUserId(); ?>">
+                                    <p class="nickname"><?= htmlspecialchars($post->getNickname()); ?></p>
+                                </a>
                                 <p class="post-date">
                                     <?php
                                         $created = $post->getCreatedAt();
@@ -75,9 +79,13 @@
                                 ?>
                                     <div class="comment <?= $hiddenClass; ?>">
                                         <div class="comment-author">
-                                            <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
+                                            <a href="/messages?user=<?= $comment->getUserId(); ?>">
+                                                <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
+                                            </a>
                                             <div class="author-meta">
-                                                <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
+                                                <a href="/messages?user=<?= $comment->getUserId(); ?>">
+                                                    <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
+                                                </a>
                                                 <p class="comment-date">
                                                     <?php
                                                         $commentDate = $comment->getCreatedAt();
