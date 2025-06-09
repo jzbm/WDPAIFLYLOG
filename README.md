@@ -5,12 +5,12 @@ FlyLog to aplikacja webowa dla pilotów do zarządzania i rejestrowania lotów. 
 
 - Rejestrację i logowanie użytkowników
 - Dodawanie i usuwanie wpisów do logbooka
-- Funkcje społecznościowe: posty, komentarze, polubienia, powiadomienia i czat
-- Zarządzanie profilem z możliwością przesyłania awatara
+- Funkcje społecznościowe takie jak posty, komentarze, polubienia, powiadomienia i czat prywatny między użytkownikami
+- Zarządzanie profilem z możliwością przesyłania awatara i wyświetlania osobistych statystyk lotów
 - Panel administratora do zarządzania użytkownikami
 - Responsywny interfejs na komputery i urządzenia mobilne
 
-Zbudowana w PHP 8+, PostgreSQL, Dockerze i Apache.
+Zbudowana przy użyciu PHP 8+, PostgreSQL oraz Dockera.
 
 ---
 
@@ -27,40 +27,42 @@ Zbudowana w PHP 8+, PostgreSQL, Dockerze i Apache.
 ---
 
 ## Bezpieczeństwo
-- Hasła hashowane przez `password_hash()` (bcrypt)
-- Zapytania SQL parametryzowane (ochrona przed SQL Injection)
-- Zarządzanie sesją przez `session_start()` i bezpieczne ciasteczka
-- Walidacja plików przy przesyłaniu awatara
+- Hashowanie za pomocą bcrypt: `password_hash()` i `password_verify()`
+- Sesje PHP: `session_start()`, `session_unset()`, `session_destroy()`
+- Ochrona endpointów: sprawdzenie zalogowania i ról użytkownika
+- Parametryzowane zapytania PDO (zapobieganie SQL Injection)
+- Wyjście danych przez `htmlspecialchars()` (ochrona przed XSS)
+- Podstawowa walidacja plików przy uploadzie
 
 ---
 
 ## Scenariusze użycia
-1. **Dodaj nowy lot:** Wprowadź szczegóły, samolot, lotnisko, czas startu i odlotu
-2. **Udostępnij post:** Publikuj aktualności lub pytania społeczności
-3. **Komentuj i lajkuj:** Wchodź w interakcje z postami innych pilotów
-4. **Odczytuj powiadomienia:** Bądź na bieżąco z aktywnością
+1. **Dodaj nowy lot:** Wprowadź szczegóły lotu, samolot, lotnisko, czas startu i lądowania
+2. **Udostępnij post:** Publikuj posty, pytania, zaproszenia na wspólny lot
+3. **Komentuj i lajkuj:** Wchodź w interakcje z postami innych użytkowników
+4. **Odczytuj powiadomienia:** Otrzymuj powiadomienia o nowych komentarzach i wiadomościach
 5. **Czat:** Wysyłaj wiadomości do innych użytkowników
-6. **Zarządzaj profilem:** Zmień awatar i zarządzaj lotami
-7. **Działania administratora:** Zarządzaj użytkownikami i moderuj treści
+6. **Zarządzaj profilem:** Zmień awatar i analizuj statystyki
+7. **Działania administratora:** Wyświetlaj i zarządzaj użytkownikami
 
 ---
 
 ## Typy modułów
-- **Loty:** Wpisy dziennika z samolotem, lotniskami i nalotem
+- **Profil:** Wpisy dziennika z samolotem, lotniskami i nalotem, Informacje o użytkowniku i awatar
 - **Posty:** Tablica społeczności do dzielenia się i dyskusji
 - **Komentarze:** Dyskusje pod postami
 - **Powiadomienia:** Alerty o nowej aktywności
 - **Wiadomości:** Prywatny czat między użytkownikami
-- **Profil:** Informacje o użytkowniku i awatar
-- **Admin:** Zarządzanie użytkownikami i rolami
+- **Admin:** Zarządzanie użytkownikami
 
 ---
 
 ## Struktura bazy danych
-- **PostgreSQL** z tabelami: użytkownicy, loty, posty, komentarze, powiadomienia, wiadomości, role
-- **Widoki** dla wydajnego czatu i ról użytkowników
-- **Triggery** do powiadomień rejestracyjnych i kaskadowego usuwania
-- **Dane testowe** w `init.sql`
+- **Tabele:** roles, users, auth, posts, posts_history, comments, likes, flights, messages, notifications, users_history
+- **Widoki:** v_flights, v_global_flight_stats
+- **Funkcje SQL:** get_total_flight_time, get_most_used_airport, get_most_used_aircraft, fn_archive_post, notify_on_register, fn_archive_user
+- **Triggery:** trg_posts_archive, trg_notify_on_register, trg_archive_user
+- **Dane testowe:** w `init.sql`
 
 ---
 
@@ -86,14 +88,19 @@ FlyLog/
 ---
 
 ## Skrypty JavaScript i API
-- `public/js/comments.js`: System komentarzy (AJAX)
-- `public/js/flights.js`: Operacje na dzienniku lotów
-- `public/js/like.js`: Lajkowanie/odlajkowanie postów
-- `public/js/messages.js`: Funkcjonalność czatu
-- `public/js/navbar.js`: Interaktywność paska nawigacji
-- `public/js/notifications.js`: Powiadomienia
-- `public/js/regnot.js`: Logika powiadomień rejestracyjnych
-- `public/js/toggleAddPost.js`: Animacja edytora postów
+- `public/js/comments.js`: pokazywanie ukrytych komentarzy (front-end)
+- `public/js/flights.js`: zarządzanie lotami (AJAX)
+  • DELETE /delete-flight (JSON)
+- `public/js/like.js`: lajki (AJAX)
+  • POST /like-post (FormData)
+- `public/js/messages.js`: czat prywatny (AJAX)
+  • GET /get-messages-ajax?user={id}
+  • POST /send-message (FormData)
+- `public/js/navbar.js`: responsywne menu i toggle paska nawigacji
+- `public/js/notifications.js`: paginacja listy powiadomień (front-end)
+- `public/js/regnot.js`: automatyczne ukrywanie banera rejestracyjnego
+- `public/js/toggleAddPost.js`: otwieranie/zamykanie formularza dodawania postu
+- `public/js/editor.js`: formatowanie tekstu w edytorze (bold, italic, underline, link)
 
 ---
 
@@ -140,4 +147,4 @@ Aplikacja będzie dostępna pod adresem [http://localhost:8080](http://localhost
 ## Autor
 *Daniel Gadzina*
 
----
+**License:** [MIT](https://choosealicense.com/licenses/mit/)
