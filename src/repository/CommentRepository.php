@@ -65,6 +65,36 @@ class CommentRepository {
         return $result;
     }
 
+    public function getLatestCommentByPostAndUser($postId, $userId) {
+        $stmt = $this->database->prepare('
+            SELECT c.*, u.nickname, u.avatar 
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.post_id = :post_id AND c.user_id = :user_id
+            ORDER BY c.created_at DESC
+            LIMIT 1
+        ');
+        $stmt->bindParam(':post_id', $postId, PDO::PARAM_INT);
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $comment = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($comment) {
+            return new Comment(
+                $comment['id'],
+                $comment['post_id'],
+                $comment['user_id'],
+                $comment['content'],
+                $comment['created_at'],
+                $comment['nickname'],
+                $comment['avatar'] ?? null
+            );
+        }
+        
+        return null;
+    }
+
     public function getPostAuthorId($postId) {
         $stmt = $this->database->prepare('
             SELECT user_id FROM posts WHERE id = :post_id

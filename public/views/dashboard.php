@@ -6,8 +6,8 @@
     <link href="/public/styles/navbar.css" rel="stylesheet">
     <link href="/public/styles/main.css" rel="stylesheet">
     <link href="/public/styles/dashboard.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>
-    <script src="/public/js/comments.js" defer></script>
+    <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>    <script src="/public/js/comments.js" defer></script>
+    <script src="/public/js/ajax-comments.js" defer></script>
     <script src="/public/js/like.js" defer></script>
     <script src="/public/js/toggleAddPost.js" defer></script>  
     <script src="/public/js/editor.js" defer></script>
