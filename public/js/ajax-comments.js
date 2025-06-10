@@ -38,20 +38,34 @@ function addCommentToDOM(form, comment) {
         commentsContainer.className = 'comments-container';
         form.parentNode.insertBefore(commentsContainer, form);
     }
-    
-    const commentEl = document.createElement('div');
+      const commentEl = document.createElement('div');
     commentEl.className = 'comment new-comment';
-    commentEl.innerHTML = `
-        <div class="comment-author">
-            <a href="/messages?user=${comment.userId}">
-                <img class="avatar" src="${comment.avatar}" alt="avatar">
-            </a>
-            <div class="author-meta">
-                <a href="/messages?user=${comment.userId}">
-                    <p class="nickname">${comment.nickname}</p>
-                </a>
-                <p class="comment-date">${comment.createdAt}</p>
+    commentEl.setAttribute('data-comment-id', comment.id);
+    
+    let deleteButtonHTML = '';
+    if (comment.isAdmin) {
+        deleteButtonHTML = `
+            <div class="comment-actions">
+                <button type="button" class="delete-comment-btn" onclick="deleteComment(${comment.id}, this)" title="Delete comment">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </div>
+        `;
+    }
+      commentEl.innerHTML = `
+        <div class="comment-author">
+            <div class="comment-author-info">
+                <a href="/messages?user=${comment.userId}">
+                    <img class="avatar" src="${comment.avatar}" alt="avatar">
+                </a>
+                <div class="author-meta">
+                    <a href="/messages?user=${comment.userId}">
+                        <p class="nickname">${comment.nickname}</p>
+                    </a>
+                    <p class="comment-date">${comment.createdAt}</p>
+                </div>
+            </div>
+            ${deleteButtonHTML}
         </div>
         <p>${comment.content}</p>
     `;

@@ -47,6 +47,7 @@ Routing::get('mark-all-as-read', 'NotificationController');
 
 Routing::post('add-comment', 'CommentController');
 Routing::post('add-comment-ajax', 'CommentController');
+Routing::post('delete-comment', 'CommentController');
 
 Routing::get('user-management', 'AdminController');
 Routing::get('delete-user', 'AdminController');

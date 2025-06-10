@@ -104,4 +104,15 @@ class CommentRepository {
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['user_id'] ?? null;
     }
+
+    public function deleteComment($commentId) {
+        try {
+            $stmt = $this->database->prepare('DELETE FROM comments WHERE id = :comment_id');
+            $stmt->bindParam(':comment_id', $commentId, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (Exception $e) {
+            error_log("Error deleting comment: " . $e->getMessage());
+            return false;
+        }
+    }
 }

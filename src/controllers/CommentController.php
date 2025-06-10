@@ -38,8 +38,7 @@ class CommentController extends AppController {
                     $nickname = $this->userRepository->getUserById($userId)['nickname'] ?? 'Unknown';
                     $message = "User <strong>$nickname</strong> commented on <a href='/dashboard#post-$postId'>your post</a>.";
                     $this->notificationRepository->createNotification($authorId, $message);
-                }
-                echo json_encode([
+                }                echo json_encode([
                     'success' => true,
                     'comment' => [
                         'id' => $newComment->getId(),
@@ -47,13 +46,41 @@ class CommentController extends AppController {
                         'nickname' => htmlspecialchars($newComment->getNickname()),
                         'avatar' => htmlspecialchars($newComment->getAvatar()),
                         'userId' => $newComment->getUserId(),
-                        'createdAt' => $newComment->getCreatedAt() ? date('d.m.Y, H:i', strtotime($newComment->getCreatedAt())) : ''
+                        'createdAt' => $newComment->getCreatedAt() ? date('d.m.Y, H:i', strtotime($newComment->getCreatedAt())) : '',
+                        'isAdmin' => isset($_SESSION['role']) && $_SESSION['role'] === 'admin'
                     ]
                 ]);
                 exit();
             } else {
                 http_response_code(400);
                 echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+                exit();
+            }
+        }
+    }
+
+    public function delete_comment() {
+        if (!isset($_SESSION['user']) || $_SESSION['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Access denied']);
+            exit();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $commentId = $_POST['comment_id'] ?? null;
+
+            if (!empty($commentId)) {
+                $success = $this->commentRepository->deleteComment($commentId);
+                
+                if ($success) {
+                    echo json_encode(['success' => true, 'message' => 'Comment deleted successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to delete comment']);
+                }
+                exit();
+            } else {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Missing comment ID']);
                 exit();
             }
         }

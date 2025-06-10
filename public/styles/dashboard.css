@@ -58,8 +58,7 @@ main {
 .post-header form {
     margin-left: 15px;
 }
-.author-info,
-.comment-author {
+.author-info {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -72,13 +71,6 @@ main {
     height: 44px;
     border-radius: 10%;
     object-fit: cover;
-}
-.comment-author .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 10%;
-    object-fit: cover;
-    border: 1px solid #ccc;
 }
 .author-meta {
     display: flex;
@@ -250,13 +242,25 @@ main {
     color: #333;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 12px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.comment.deleting {
+    opacity: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
 }
 .comment-author {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
     margin-bottom: 8px;
     margin-top: 0;
+}
+.comment-author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 .comment-author .avatar {
     width: 32px;

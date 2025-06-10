@@ -8,6 +8,7 @@
     <link href="/public/styles/dashboard.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/8fd9367667.js" crossorigin="anonymous"></script>    <script src="/public/js/comments.js" defer></script>
     <script src="/public/js/ajax-comments.js" defer></script>
+    <script src="/public/js/delete-comment.js" defer></script>
     <script src="/public/js/like.js" defer></script>
     <script src="/public/js/toggleAddPost.js" defer></script>  
     <script src="/public/js/editor.js" defer></script>
@@ -73,41 +74,50 @@
                             $hiddenCount = $hiddenCountMap[$postId] ?? 0;
                         ?>
                         <?php if (!empty($visibleComments) || !empty($hiddenCommentsMap[$postId])): ?>
-                            <div class="comments-container">
-                                <?php foreach ($visibleComments as $comment): ?>
-                                    <div class="comment">
-                                        <div class="comment-author">
-                                            <a href="/messages?user=<?= $comment->getUserId(); ?>">
-                                                <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
-                                            </a>
-                                            <div class="author-meta">
-                                                <a href="/messages?user=<?= $comment->getUserId(); ?>">
-                                                    <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
-                                                </a>
-                                                <p class="comment-date">
-                                                    <?php
-                                                        $commentDate = $comment->getCreatedAt();
-                                                        echo $commentDate ? date('d.m.Y, H:i', strtotime($commentDate)) : '';
-                                                    ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <p><?= htmlspecialchars($comment->getContent()); ?></p>
-                                    </div>
-                                <?php endforeach; ?>
-                                <?php if (!empty($hiddenCommentsMap[$postId])): ?>
-                                    <?php foreach ($hiddenCommentsMap[$postId] as $comment): ?>
-                                        <div class="comment hidden-comment">
-                                            <div class="comment-author">
+                            <div class="comments-container">                                <?php foreach ($visibleComments as $comment): ?>
+                                    <div class="comment" data-comment-id="<?= $comment->getId(); ?>">                                        <div class="comment-author">
+                                            <div class="comment-author-info">
                                                 <a href="/messages?user=<?= $comment->getUserId(); ?>">
                                                     <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
                                                 </a>
                                                 <div class="author-meta">
                                                     <a href="/messages?user=<?= $comment->getUserId(); ?>">
                                                         <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
-                                                    </a>
-                                                    <p class="comment-date"><?php echo $commentDate = $comment->getCreatedAt() ? date('d.m.Y, H:i', strtotime($comment->getCreatedAt())) : ''; ?></p>
+                                                    </a>                                <p class="comment-date">
+                                    <?php
+                                        $commentDate = $comment->getCreatedAt();
+                                        echo $commentDate ? date('d.m.Y, H:i', strtotime($commentDate)) : '';
+                                    ?>
+                                </p>
                                                 </div>
+                                            </div>
+                                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                                                <button type="button" class="delete-comment-btn" onclick="deleteComment(<?= $comment->getId(); ?>, this)" title="Delete comment">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                        </div>
+                                        <p><?= htmlspecialchars($comment->getContent()); ?></p>
+                                    </div>
+                                <?php endforeach; ?>
+                                <?php if (!empty($hiddenCommentsMap[$postId])): ?>                                    <?php foreach ($hiddenCommentsMap[$postId] as $comment): ?>
+                                        <div class="comment hidden-comment" data-comment-id="<?= $comment->getId(); ?>">                                            <div class="comment-author">
+                                                <div class="comment-author-info">
+                                                    <a href="/messages?user=<?= $comment->getUserId(); ?>">
+                                                        <img class="avatar" src="<?= htmlspecialchars($comment->getAvatar()); ?>" alt="avatar">
+                                                    </a>
+                                                    <div class="author-meta">
+                                                        <a href="/messages?user=<?= $comment->getUserId(); ?>">
+                                                            <p class="nickname"><?= htmlspecialchars($comment->getNickname()); ?></p>
+                                                        </a>
+                                                        <p class="comment-date"><?php echo $commentDate = $comment->getCreatedAt() ? date('d.m.Y, H:i', strtotime($comment->getCreatedAt())) : ''; ?></p>
+                                                    </div>
+                                                </div>
+                                                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                                                    <button type="button" class="delete-comment-btn" onclick="deleteComment(<?= $comment->getId(); ?>, this)" title="Delete comment">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                <?php endif; ?>
                                             </div>
                                             <p><?= htmlspecialchars($comment->getContent()); ?></p>
                                         </div>
