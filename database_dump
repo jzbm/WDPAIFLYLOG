@@ -1,0 +1,1599 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 17.4 (Debian 17.4-1.pgdg120+2)
+-- Dumped by pg_dump version 17.4
+
+-- Started on 2025-06-11 16:12:54 UTC
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 246 (class 1255 OID 41447)
+-- Name: fn_archive_post(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.fn_archive_post() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO public.posts_history (
+    post_id,
+    user_id,
+    title,
+    content,
+    created_at,
+    image,
+    archived_at
+  ) VALUES (
+    OLD.id,
+    OLD.user_id,
+    OLD.title,
+    OLD.content,
+    OLD.created_at,
+    OLD.image,
+    CURRENT_TIMESTAMP
+  );
+  IF TG_OP = 'UPDATE' THEN
+    RETURN NEW;
+  ELSE
+    RETURN OLD;
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.fn_archive_post() OWNER TO postgres;
+
+--
+-- TOC entry 247 (class 1255 OID 41531)
+-- Name: fn_archive_user(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.fn_archive_user() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    INSERT INTO users_history(user_id, nickname, role_id, email)
+    VALUES (
+        OLD.id,
+        OLD.nickname,
+        OLD.role_id,
+        (SELECT email FROM auth WHERE id = OLD.id)
+    );
+    RETURN OLD;
+END;
+$$;
+
+
+ALTER FUNCTION public.fn_archive_user() OWNER TO postgres;
+
+--
+-- TOC entry 245 (class 1255 OID 33264)
+-- Name: get_most_used_aircraft(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_most_used_aircraft(uid integer) RETURNS text
+    LANGUAGE sql
+    AS $$
+    SELECT aircraft
+      FROM flights
+     WHERE user_id = uid
+     GROUP BY aircraft
+     ORDER BY COUNT(*) DESC
+     LIMIT 1;
+  $$;
+
+
+ALTER FUNCTION public.get_most_used_aircraft(uid integer) OWNER TO postgres;
+
+--
+-- TOC entry 244 (class 1255 OID 33263)
+-- Name: get_most_used_airport(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_most_used_airport(uid integer) RETURNS text
+    LANGUAGE sql
+    AS $$
+    SELECT airport
+      FROM (
+        SELECT departure_airport AS airport FROM flights WHERE user_id = uid
+        UNION ALL
+        SELECT landing_airport   AS airport FROM flights WHERE user_id = uid
+      ) x
+     GROUP BY airport
+     ORDER BY COUNT(*) DESC
+     LIMIT 1;
+  $$;
+
+
+ALTER FUNCTION public.get_most_used_airport(uid integer) OWNER TO postgres;
+
+--
+-- TOC entry 243 (class 1255 OID 33262)
+-- Name: get_total_flight_time(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_total_flight_time(uid integer) RETURNS interval
+    LANGUAGE sql
+    AS $$
+    SELECT (SUM(flight_time) * '1 minute'::interval)
+      FROM public.flights
+     WHERE user_id = uid;
+  $$;
+
+
+ALTER FUNCTION public.get_total_flight_time(uid integer) OWNER TO postgres;
+
+--
+-- TOC entry 248 (class 1255 OID 41450)
+-- Name: notify_on_register(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.notify_on_register() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO notifications (user_id, content, is_read, created_at)
+  VALUES (NEW.id, 'Registration was successful!', false, CURRENT_TIMESTAMP);
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.notify_on_register() OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 234 (class 1259 OID 16857)
+-- Name: auth; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.auth (
+    id integer NOT NULL,
+    email character varying NOT NULL,
+    password character varying NOT NULL
+);
+
+
+ALTER TABLE public.auth OWNER TO postgres;
+
+--
+-- TOC entry 233 (class 1259 OID 16856)
+-- Name: auth_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.auth_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.auth_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3530 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: auth_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.auth_id_seq OWNED BY public.auth.id;
+
+
+--
+-- TOC entry 230 (class 1259 OID 16813)
+-- Name: comments; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.comments (
+    id integer NOT NULL,
+    post_id integer NOT NULL,
+    user_id integer NOT NULL,
+    content text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.comments OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 16812)
+-- Name: comments_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.comments_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.comments_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3531 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.comments_id_seq OWNED BY public.comments.id;
+
+
+--
+-- TOC entry 222 (class 1259 OID 16737)
+-- Name: flights; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.flights (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    departure_airport character varying(50) NOT NULL,
+    landing_airport character varying(50) NOT NULL,
+    aircraft character varying(50) NOT NULL,
+    flight_time integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    departure_time timestamp without time zone DEFAULT now() NOT NULL,
+    landing_time timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.flights OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 16736)
+-- Name: flights_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.flights_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.flights_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3532 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: flights_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.flights_id_seq OWNED BY public.flights.id;
+
+
+--
+-- TOC entry 232 (class 1259 OID 16836)
+-- Name: likes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.likes (
+    id integer NOT NULL,
+    post_id integer NOT NULL,
+    user_id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.likes OWNER TO postgres;
+
+--
+-- TOC entry 231 (class 1259 OID 16835)
+-- Name: likes_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.likes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.likes_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3533 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: likes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.likes_id_seq OWNED BY public.likes.id;
+
+
+--
+-- TOC entry 226 (class 1259 OID 16774)
+-- Name: messages; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.messages (
+    id integer NOT NULL,
+    sender_id integer NOT NULL,
+    receiver_id integer NOT NULL,
+    content text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    is_read boolean DEFAULT false
+);
+
+
+ALTER TABLE public.messages OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 16773)
+-- Name: messages_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.messages_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.messages_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3534 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: messages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.messages_id_seq OWNED BY public.messages.id;
+
+
+--
+-- TOC entry 228 (class 1259 OID 16794)
+-- Name: notifications; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notifications (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    content text NOT NULL,
+    is_read boolean DEFAULT false,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+
+ALTER TABLE public.notifications OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 16793)
+-- Name: notifications_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.notifications_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.notifications_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3535 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: notifications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.notifications_id_seq OWNED BY public.notifications.id;
+
+
+--
+-- TOC entry 220 (class 1259 OID 16668)
+-- Name: posts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.posts (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    title character varying(255) NOT NULL,
+    content text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    image character varying(255)
+);
+
+
+ALTER TABLE public.posts OWNER TO postgres;
+
+--
+-- TOC entry 238 (class 1259 OID 41438)
+-- Name: posts_history; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.posts_history (
+    history_id integer NOT NULL,
+    post_id integer NOT NULL,
+    user_id integer NOT NULL,
+    title character varying(255) NOT NULL,
+    content text NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    image character varying(255),
+    archived_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.posts_history OWNER TO postgres;
+
+--
+-- TOC entry 237 (class 1259 OID 41437)
+-- Name: posts_history_history_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.posts_history_history_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.posts_history_history_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3536 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: posts_history_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.posts_history_history_id_seq OWNED BY public.posts_history.history_id;
+
+
+--
+-- TOC entry 219 (class 1259 OID 16667)
+-- Name: posts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.posts_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.posts_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3537 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: posts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.posts_id_seq OWNED BY public.posts.id;
+
+
+--
+-- TOC entry 218 (class 1259 OID 16657)
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    nickname character varying(50) DEFAULT 'User'::character varying NOT NULL,
+    avatar character varying(255) DEFAULT NULL::character varying,
+    role_id integer DEFAULT 1 NOT NULL
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- TOC entry 239 (class 1259 OID 41452)
+-- Name: recent_conversations; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.recent_conversations AS
+ SELECT u.id,
+    u.nickname,
+    u.avatar,
+    m.content AS lastmessage,
+    m.created_at AS "timestamp",
+    conversation_groups.user1,
+    conversation_groups.user2
+   FROM ((( SELECT LEAST(messages.sender_id, messages.receiver_id) AS user1,
+            GREATEST(messages.sender_id, messages.receiver_id) AS user2,
+            max(messages.created_at) AS latest
+           FROM public.messages
+          GROUP BY LEAST(messages.sender_id, messages.receiver_id), GREATEST(messages.sender_id, messages.receiver_id)) conversation_groups
+     JOIN public.messages m ON (((LEAST(m.sender_id, m.receiver_id) = conversation_groups.user1) AND (GREATEST(m.sender_id, m.receiver_id) = conversation_groups.user2) AND (m.created_at = conversation_groups.latest))))
+     JOIN public.users u ON (((conversation_groups.user1 = u.id) OR (conversation_groups.user2 = u.id))));
+
+
+ALTER VIEW public.recent_conversations OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 16752)
+-- Name: roles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.roles (
+    id integer NOT NULL,
+    name character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.roles OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 16751)
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.roles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.roles_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3538 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
+
+
+--
+-- TOC entry 242 (class 1259 OID 41524)
+-- Name: users_history; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users_history (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    nickname character varying(100) NOT NULL,
+    role_id integer NOT NULL,
+    email character varying(150),
+    deleted_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.users_history OWNER TO postgres;
+
+--
+-- TOC entry 241 (class 1259 OID 41523)
+-- Name: users_history_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_history_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_history_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3539 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: users_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_history_id_seq OWNED BY public.users_history.id;
+
+
+--
+-- TOC entry 217 (class 1259 OID 16656)
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+
+--
+-- TOC entry 3540 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- TOC entry 235 (class 1259 OID 33258)
+-- Name: v_flights; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.v_flights AS
+ SELECT f.id,
+    f.user_id,
+    u.nickname,
+    f.departure_airport,
+    f.landing_airport,
+    f.aircraft,
+    f.flight_time,
+    f.departure_time,
+    f.landing_time,
+    f.created_at
+   FROM (public.flights f
+     JOIN public.users u ON ((u.id = f.user_id)));
+
+
+ALTER VIEW public.v_flights OWNER TO postgres;
+
+--
+-- TOC entry 236 (class 1259 OID 41432)
+-- Name: v_global_flight_stats; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.v_global_flight_stats AS
+ SELECT ( SELECT count(*) AS count
+           FROM public.flights) AS total_flights,
+    ( SELECT count(*) AS count
+           FROM public.flights
+          WHERE (flights.departure_time >= (now() - '7 days'::interval))) AS flights_last_7_days,
+    ( SELECT sub.airport
+           FROM ( SELECT flights.departure_airport AS airport
+                   FROM public.flights
+                UNION ALL
+                 SELECT flights.landing_airport AS airport
+                   FROM public.flights) sub
+          GROUP BY sub.airport
+          ORDER BY (count(*)) DESC
+         LIMIT 1) AS most_used_airport,
+    ( SELECT flights.aircraft
+           FROM public.flights
+          GROUP BY flights.aircraft
+          ORDER BY (count(*)) DESC
+         LIMIT 1) AS most_used_aircraft,
+    t.user_id AS top_pilot_id,
+    u.nickname AS top_pilot_nickname,
+    t.total_time AS top_pilot_total_minutes
+   FROM (( SELECT flights.user_id,
+            sum(flights.flight_time) AS total_time
+           FROM public.flights
+          GROUP BY flights.user_id
+          ORDER BY (sum(flights.flight_time)) DESC
+         LIMIT 1) t
+     LEFT JOIN public.users u ON ((u.id = t.user_id)));
+
+
+ALTER VIEW public.v_global_flight_stats OWNER TO postgres;
+
+--
+-- TOC entry 240 (class 1259 OID 41518)
+-- Name: v_users_with_roles; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.v_users_with_roles AS
+ SELECT u.id AS user_id,
+    a.email,
+    u.nickname,
+    r.name AS role_name,
+    u.avatar
+   FROM ((public.users u
+     JOIN public.auth a ON ((a.id = u.id)))
+     LEFT JOIN public.roles r ON ((r.id = u.role_id)));
+
+
+ALTER VIEW public.v_users_with_roles OWNER TO postgres;
+
+--
+-- TOC entry 3304 (class 2604 OID 16860)
+-- Name: auth id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth ALTER COLUMN id SET DEFAULT nextval('public.auth_id_seq'::regclass);
+
+
+--
+-- TOC entry 3300 (class 2604 OID 16816)
+-- Name: comments id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comments ALTER COLUMN id SET DEFAULT nextval('public.comments_id_seq'::regclass);
+
+
+--
+-- TOC entry 3289 (class 2604 OID 16740)
+-- Name: flights id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.flights ALTER COLUMN id SET DEFAULT nextval('public.flights_id_seq'::regclass);
+
+
+--
+-- TOC entry 3302 (class 2604 OID 16839)
+-- Name: likes id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.likes ALTER COLUMN id SET DEFAULT nextval('public.likes_id_seq'::regclass);
+
+
+--
+-- TOC entry 3294 (class 2604 OID 16777)
+-- Name: messages id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.messages ALTER COLUMN id SET DEFAULT nextval('public.messages_id_seq'::regclass);
+
+
+--
+-- TOC entry 3297 (class 2604 OID 16797)
+-- Name: notifications id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications ALTER COLUMN id SET DEFAULT nextval('public.notifications_id_seq'::regclass);
+
+
+--
+-- TOC entry 3287 (class 2604 OID 16671)
+-- Name: posts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts ALTER COLUMN id SET DEFAULT nextval('public.posts_id_seq'::regclass);
+
+
+--
+-- TOC entry 3305 (class 2604 OID 41441)
+-- Name: posts_history history_id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts_history ALTER COLUMN history_id SET DEFAULT nextval('public.posts_history_history_id_seq'::regclass);
+
+
+--
+-- TOC entry 3293 (class 2604 OID 16755)
+-- Name: roles id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
+
+
+--
+-- TOC entry 3282 (class 2604 OID 16660)
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- TOC entry 3307 (class 2604 OID 41527)
+-- Name: users_history id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users_history ALTER COLUMN id SET DEFAULT nextval('public.users_history_id_seq'::regclass);
+
+
+--
+-- TOC entry 3520 (class 0 OID 16857)
+-- Dependencies: 234
+-- Data for Name: auth; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.auth (id, email, password) FROM stdin;
+1	skynav@example.com	$2y$10$abcdef1234567890abcdefghijklmno
+3	aeropilot99@example.com	$2y$10$09876abcdef54321ghijklmnoqrstuv
+5	jetsetteralex@example.com	$2y$10$uvwxyz1234567890abcdefmnopqrst
+8	rotorrider@example.com	$2y$10$09876lmnop12345abcdefqrstuv789
+9	gliderenth@gmail.com	$2y$10$rstuv12345abcdef67890ghijklmnop
+10	turbulencet@example.com	$2y$10$mnopqr1234567890abcdefstuvghijk
+11	gmail@gmail.com	$2y$10$HvgoHjJZS69nRV2gXp4wgu.eiyHPzC19bXI6ETAUmj52JFjik0Ci.
+12	newbie@gmail.com	$2y$10$ZtI4rXgOMwKPZoVvKJWJteKJfLy42vv9oGDCzLbIBS3vdoTU9duDK
+15	gmaill@gmail.com	$2y$10$cosqKVP7.A2oRmGC2sDmOeBZNAj7bzX/RZ1R74ng8uaYWCeCtAlEG
+16	wwww@sss.pl	$2y$10$LKTZlg9YDb.oXBhaginiweupkj9F4ymB2MQRpC8WlawdZRZh4dhYy
+17	adas@sadsdc.p	$2y$10$mA8jv8PSrUlMEMejP4rs7e7RB5A6vqSMb9Np49gd2XI5Z7pc1JEY2
+18	asas@sm.pl	$2y$10$XOlrwCY18KAdUmEmtKf8i.VwmwfJfek8nHB.3A0OgFvpTeCMIEkle
+19	ggg@ggg.com	$2y$10$hJIIki1pWOfJIyBvQ6nODegObYN.wvcG3POsmDKPpdKK93zFTeoF2
+20	www@ss.pl	$2y$10$iHUAGF/YItA/KhE0jmCFlOnjRqPL8vMOBaXBkMYNR2pXP7iwekLB.
+21	sss@gss.pl	$2y$10$Cb31FUEEsaasAkbAJbEr7.cbeKVC5qK4xU0M9n11ZP6akIqatlMzi
+22	www@gmail.com	$2y$10$/SRC5R3pTxqpRNc3bjjKneRRliRZKaoST3q7GSrB7KvLvRIjiRSiy
+23	stt@gmail.com	$2y$10$apx7cdWPYQmWb9Vg4JbYiOycshUD9NsV8ZwCCxzk3FYUQP./yvaoS
+\.
+
+
+--
+-- TOC entry 3516 (class 0 OID 16813)
+-- Dependencies: 230
+-- Data for Name: comments; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.comments (id, post_id, user_id, content, created_at) FROM stdin;
+64	30	11	rrr	2025-06-11 15:41:09.253149
+65	30	11	rrr	2025-06-11 15:41:10.865746
+66	30	11	rrr	2025-06-11 15:41:12.519119
+67	30	11	wwww	2025-06-11 15:41:14.010064
+68	30	11	ccc	2025-06-11 15:56:14.336186
+69	30	23	ccc	2025-06-11 15:56:20.752827
+20	1	17	qweqwe	2025-06-04 16:46:33.469922
+\.
+
+
+--
+-- TOC entry 3508 (class 0 OID 16737)
+-- Dependencies: 222
+-- Data for Name: flights; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.flights (id, user_id, departure_airport, landing_airport, aircraft, flight_time, created_at, departure_time, landing_time) FROM stdin;
+1	1	EPKK	EPWA	C172	120	2025-01-16 13:22:31	2025-01-16 13:50:00	2025-01-16 15:50:00
+2	1	EPWA	EPPO	C152	90	2025-01-20 09:18:07	2025-01-20 09:45:00	2025-01-20 11:15:00
+3	1	EPPO	EPKK	PA28	105	2025-01-22 17:44:15	2025-01-22 18:10:00	2025-01-22 19:55:00
+8	3	EPPO	EPMM	C152	210	2025-02-02 11:50:18	2025-02-02 12:10:00	2025-02-02 15:40:00
+9	3	EPMM	EPWA	C172	180	2025-02-04 16:22:09	2025-02-04 16:40:00	2025-02-04 19:40:00
+10	3	EPWA	EPMD	DA40	195	2025-02-06 09:15:44	2025-02-06 09:35:00	2025-02-06 12:50:00
+11	3	EPMD	EPPO	PA28	120	2025-02-08 13:44:22	2025-02-08 14:00:00	2025-02-08 16:00:00
+16	5	EPPO	EPWA	C152	120	2025-02-18 10:31:05	2025-02-18 10:55:00	2025-02-18 12:55:00
+17	5	EPWA	EPMM	C172	150	2025-02-20 15:44:22	2025-02-20 16:10:00	2025-02-20 18:40:00
+18	5	EPMM	EPPO	DA40	180	2025-02-22 19:58:11	2025-02-22 20:20:00	2025-02-22 23:20:00
+19	5	EPPO	EPKK	PA28	90	2025-02-24 08:13:19	2025-02-24 08:35:00	2025-02-24 10:05:00
+20	5	EPKK	EPMM	C152	120	2025-02-26 11:27:42	2025-02-26 11:50:00	2025-02-26 13:50:00
+29	8	EPPO	EPMM	C172	195	2025-03-08 11:22:59	2025-03-08 11:45:00	2025-03-08 15:00:00
+30	8	EPMM	EPWA	DA40	180	2025-03-10 13:11:38	2025-03-10 13:35:00	2025-03-10 16:15:00
+31	8	EPWA	EPPO	PA28	150	2025-03-12 15:44:22	2025-03-12 16:10:00	2025-03-12 18:40:00
+32	9	EPKK	EPWA	C152	120	2025-03-05 07:38:27	2025-03-05 07:55:00	2025-03-05 09:55:00
+33	9	EPWA	EPPO	C172	180	2025-03-07 10:12:09	2025-03-07 10:35:00	2025-03-07 13:05:00
+34	9	EPPO	EPMM	DA40	195	2025-03-09 12:45:58	2025-03-09 13:10:00	2025-03-09 16:25:00
+35	9	EPMM	EPPO	PA28	165	2025-03-11 14:22:16	2025-03-11 14:45:00	2025-03-11 17:30:00
+36	9	EPPO	EPKK	C152	105	2025-03-13 16:58:47	2025-03-13 17:15:00	2025-03-13 18:00:00
+37	10	EPWA	EPPO	C172	150	2025-03-01 18:05:53	2025-03-01 18:25:00	2025-03-01 20:55:00
+38	10	EPPO	EPMM	DA40	180	2025-03-03 20:33:22	2025-03-03 20:55:00	2025-03-04 00:15:00
+39	10	EPMM	EPWA	PA28	210	2025-03-05 22:12:30	2025-03-05 22:35:00	2025-03-06 02:05:00
+40	10	EPWA	EPKK	C152	120	2025-03-07 23:45:12	2025-03-07 23:55:00	2025-03-08 01:55:00
+41	12	EPKK	EPKP	C152	60	2025-06-02 00:21:19.180203	2025-06-02 12:00:00	2025-06-02 13:00:00
+42	11	EPKP	EPKK	C152	150	2025-06-02 07:20:38.382593	2025-06-04 15:15:00	2025-06-04 17:45:00
+43	11	EPKK	EPKP	C152	161	2025-06-02 07:20:56.926356	2025-06-12 13:14:00	2025-06-12 15:55:00
+44	15	EPKK	EPKP	C152	108	2025-06-02 07:43:18.877499	2025-06-02 15:15:00	2025-06-02 17:03:00
+45	21	EPKK	EPKK	C152	60	2025-06-08 12:03:02.322788	2025-06-08 14:14:00	2025-06-08 15:14:00
+46	11	EPKP	EPKP	C152	71	2025-06-08 12:09:20.811463	2025-06-07 15:22:00	2025-06-07 16:33:00
+47	11	EPKK	EPPP	SS1	60	2025-06-08 12:09:47.750438	2025-06-08 22:22:00	2025-06-08 23:22:00
+\.
+
+
+--
+-- TOC entry 3518 (class 0 OID 16836)
+-- Dependencies: 232
+-- Data for Name: likes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.likes (id, post_id, user_id, created_at) FROM stdin;
+2	1	3	2025-03-04 11:23:17
+3	1	5	2025-03-05 12:34:28
+5	1	9	2025-03-07 14:56:50
+6	2	1	2025-03-06 17:22:11
+7	2	3	2025-03-07 18:33:22
+9	2	8	2025-03-09 20:55:44
+10	2	10	2025-03-10 21:06:55
+13	3	5	2025-03-13 11:53:34
+15	3	9	2025-03-15 13:15:56
+16	3	10	2025-03-16 14:26:07
+36	8	1	2025-03-22 19:15:39
+37	8	3	2025-03-23 20:26:50
+38	8	5	2025-03-24 21:37:01
+42	9	8	2025-03-26 09:36:47
+43	9	10	2025-03-27 10:47:58
+44	10	1	2025-03-26 11:12:09
+45	10	3	2025-03-27 12:23:20
+47	10	9	2025-03-29 14:45:42
+695	30	11	2025-06-10 16:42:34.665904
+50	11	5	2025-04-05 10:33:33
+51	12	1	2025-04-04 14:01:44
+52	12	3	2025-04-05 15:12:55
+54	12	8	2025-04-07 17:34:17
+698	44	23	2025-06-11 15:57:35.979062
+62	15	3	2025-04-13 17:07:10
+64	15	9	2025-04-15 19:29:32
+65	15	10	2025-04-16 20:40:43
+70	17	3	2025-04-21 13:12:55
+71	17	5	2025-04-22 14:23:06
+72	17	8	2025-04-23 15:34:17
+77	19	9	2025-04-26 09:22:22
+78	20	1	2025-04-28 10:01:44
+79	20	3	2025-04-29 11:12:55
+80	20	5	2025-04-30 12:23:06
+637	8	11	2025-06-08 10:02:29.317536
+84	22	1	2025-05-01 16:11:11
+85	22	3	2025-05-02 17:22:22
+638	9	11	2025-06-08 10:02:30.059566
+92	25	8	2025-05-13 08:56:39
+98	28	5	2025-05-21 09:22:22
+99	29	3	2025-05-22 10:45:28
+101	30	1	2025-05-25 13:11:11
+103	30	8	2025-05-27 15:33:33
+104	30	9	2025-05-28 16:44:44
+647	1	11	2025-06-08 10:03:29.22481
+105	1	12	2025-06-02 00:13:21.288031
+108	2	12	2025-06-02 00:13:24.046377
+110	9	12	2025-06-02 00:19:31.122224
+127	29	12	2025-06-02 00:22:43.911192
+134	30	15	2025-06-02 07:43:05.071609
+\.
+
+
+--
+-- TOC entry 3512 (class 0 OID 16774)
+-- Dependencies: 226
+-- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.messages (id, sender_id, receiver_id, content, created_at, is_read) FROM stdin;
+3	3	5	Hej JetSetterAlex, pamiętasz lot do Rzeszowa? Masz fotki z tamtego dnia?	2025-01-17 14:23:31	f
+4	5	3	Tak, oto link do galerii: http://aero-gallery.com/rzeszow2025	2025-01-17 15:11:02	f
+76	21	1	sss	2025-06-08 12:04:05.704139	f
+77	11	21	fajnie	2025-06-08 12:04:19.062039	t
+78	11	21	qweqweqw	2025-06-08 12:04:24.552376	t
+79	11	21	weww	2025-06-08 12:04:28.528687	t
+19	8	9	GliderEnthusiast, może wspólny trening na szybowcu w niedzielę?	2025-01-25 14:30:12	f
+20	9	8	RotorRider, chętnie. Spotkajmy się o 10:00 w EPPO.	2025-01-25 14:45:27	f
+21	1	10	TurbulenceT, musimy omówić te testy ADS-B, masz chwilę?	2025-01-26 07:12:44	f
+22	10	1	SkyNavigator, jestem dziś wolny po 15:00 – zadzwoń lub napisz.	2025-01-26 07:35:19	f
+80	11	21	,.,	2025-06-08 12:08:10.397248	t
+25	5	8	RotorRider, potrzebuję kogoś do lotu humanitarnego – dasz radę?	2025-01-28 13:22:11	f
+26	8	5	JetSetterAlex, liczę na to. Przygotuj plan i zgłosimy do rzeczoznawcy.	2025-01-28 13:40:27	f
+33	12	5	ss	2025-06-02 00:18:03.282277	f
+35	12	5	ss	2025-06-02 00:18:30.254463	f
+36	12	3	www	2025-06-02 00:18:39.342196	f
+75	21	11	siema	2025-06-08 12:03:55.805912	t
+42	11	1	Witam	2025-06-02 07:21:40.216523	f
+43	11	5	Jak tam	2025-06-02 07:21:47.789662	f
+44	11	3	heja	2025-06-02 07:22:09.121208	f
+46	15	1	Ww	2025-06-02 07:43:45.437056	f
+47	15	1	ewewe	2025-06-02 08:40:51.576336	f
+49	11	3	wqqwqwqw	2025-06-02 19:41:25.044773	f
+50	11	3	saassadadas	2025-06-02 19:41:26.93079	f
+51	11	3	wqqwwq	2025-06-02 19:41:35.179087	f
+52	18	3	EEE	2025-06-07 18:18:27.207052	f
+53	18	3	:-)	2025-06-07 18:18:30.690446	f
+54	11	18	ww	2025-06-08 09:55:28.638639	f
+55	19	18	hee	2025-06-08 10:09:42.666281	f
+58	11	15	co tam	2025-06-08 10:17:38.716645	f
+83	11	22	czesc	2025-06-08 15:04:10.615437	t
+84	11	22	sseqweqw	2025-06-08 15:04:40.329795	t
+86	11	22	heja	2025-06-10 17:41:00.637475	f
+57	11	19	sie	2025-06-08 10:10:10.161225	t
+71	19	11	www	2025-06-08 10:41:43.792474	t
+72	19	11	www	2025-06-08 10:41:44.87682	t
+63	19	11	eeee	2025-06-08 10:35:53.04376	t
+64	19	11	eqwe	2025-06-08 10:37:30.27012	t
+65	19	11	eee	2025-06-08 10:37:31.421489	t
+56	19	11	wel	2025-06-08 10:09:55.293716	t
+59	19	11	test	2025-06-08 10:21:55.169436	t
+60	19	11	qweqwe	2025-06-08 10:27:13.351822	t
+61	19	11	eqwqwe	2025-06-08 10:32:28.761818	t
+62	19	11	test	2025-06-08 10:34:11.82406	t
+66	19	11	eeee	2025-06-08 10:39:06.582523	t
+85	22	11	czesc	2025-06-08 15:05:45.524364	t
+67	19	11	eweww	2025-06-08 10:39:08.430709	t
+68	19	11	dsds	2025-06-08 10:39:10.14568	t
+69	19	11	wwww	2025-06-08 10:41:19.282178	t
+70	19	11	wwwwwwww	2025-06-08 10:41:22.001605	t
+73	19	11	wwww	2025-06-08 10:42:01.396219	t
+74	19	11	wwww	2025-06-08 10:42:02.824032	t
+87	23	11	czesc	2025-06-11 16:00:22.860359	t
+89	23	11	czesc	2025-06-11 16:02:00.83435	t
+90	23	11	dddd	2025-06-11 16:05:41.842023	f
+82	11	11	t	2025-06-08 14:07:49.57307	t
+88	11	23	witam	2025-06-11 16:01:39.540039	t
+81	11	21	asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas asdasdsa asas	2025-06-08 12:08:25.219219	t
+\.
+
+
+--
+-- TOC entry 3514 (class 0 OID 16794)
+-- Dependencies: 228
+-- Data for Name: notifications; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.notifications (id, user_id, content, is_read, created_at) FROM stdin;
+1	1	Registration was successful! You can now log in.	f	2025-06-01 23:54:32.78136
+3	3	Registration was successful! You can now log in.	f	2025-06-01 23:54:32.78136
+5	5	Registration was successful! You can now log in.	f	2025-06-01 23:54:32.78136
+8	8	Registration was successful! You can now log in.	f	2025-06-01 23:54:32.78136
+9	9	Registration was successful! You can now log in.	f	2025-06-01 23:54:32.78136
+10	10	Registration was successful! You can now log in.	f	2025-06-01 23:54:32.78136
+12	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-02 00:00:22.449745
+13	12	Registration was successful!	t	2025-06-02 00:13:00.697616
+55	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 14:01:45.530389
+16	12	User <strong>213123</strong> commented on <a href='/dashboard#post-32'>your post</a>.	f	2025-06-02 01:10:59.937929
+17	12	User <strong>213123</strong> commented on <a href='/dashboard#post-32'>your post</a>.	f	2025-06-02 01:11:02.570162
+18	12	User <strong>213123</strong> commented on <a href='/dashboard#post-32'>your post</a>.	f	2025-06-02 01:11:04.710197
+19	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-02 07:17:39.517176
+20	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-02 07:17:46.925191
+21	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-02 07:17:49.417313
+22	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-02 07:17:51.235722
+43	21	Registration was successful!	t	2025-06-08 11:55:33.236425
+23	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-02 07:39:55.507121
+24	14	Registration was successful!	f	2025-06-02 07:41:00.150423
+26	5	User <strong>testtt</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-02 07:42:57.490737
+25	15	Registration was successful!	t	2025-06-02 07:42:49.856008
+27	16	Registration was successful!	f	2025-06-02 19:40:38.066133
+28	17	Registration was successful!	t	2025-06-04 16:42:29.759145
+44	21	User <strong>Administrator</strong> commented on <a href='/dashboard#post-41'>your post</a>.	t	2025-06-08 12:02:04.313175
+45	22	Registration was successful!	t	2025-06-08 14:57:42.936084
+46	11	User <strong>2223232</strong> commented on <a href='/dashboard#post-35'>your post</a>.	t	2025-06-08 14:59:18.061628
+11	11	Registration was successful! You can now log in.	t	2025-06-01 23:58:44.696154
+14	11	User <strong>newbie</strong> commented on <a href='/dashboard#post-31'>your post</a>.	t	2025-06-02 00:13:12.488821
+29	11	New comment on your post.	t	2025-06-04 16:42:41.777933
+30	11	User <strong>1223123</strong> commented on <a href='/dashboard#post-34'>your post</a>.	t	2025-06-04 16:42:41.780997
+32	1	User <strong>1223123</strong> commented on <a href='/dashboard#post-1'>your post</a>.	f	2025-06-04 16:46:33.472332
+56	15	User <strong>Administrator</strong> commented on <a href='/dashboard#post-33'>your post</a>.	f	2025-06-10 14:02:25.551968
+57	15	User <strong>Administrator</strong> commented on <a href='/dashboard#post-33'>your post</a>.	f	2025-06-10 14:05:38.408684
+58	15	User <strong>Administrator</strong> commented on <a href='/dashboard#post-33'>your post</a>.	f	2025-06-10 14:08:53.104413
+59	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:09:17.893621
+60	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:10:05.908801
+61	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:23:10.484374
+62	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:26:17.870202
+35	18	Registration was successful!	t	2025-06-07 18:17:46.656675
+36	19	Registration was successful!	t	2025-06-08 10:09:19.108383
+37	20	Registration was successful!	t	2025-06-08 10:49:07.70265
+38	18	User <strong>sss</strong> commented on <a href='/dashboard#post-38'>your post</a>.	f	2025-06-08 10:53:44.384444
+39	18	User <strong>sss</strong> commented on <a href='/dashboard#post-38'>your post</a>.	f	2025-06-08 10:53:46.00589
+40	18	User <strong>sss</strong> commented on <a href='/dashboard#post-38'>your post</a>.	f	2025-06-08 10:53:48.064942
+41	18	User <strong>sss</strong> commented on <a href='/dashboard#post-38'>your post</a>.	f	2025-06-08 10:57:28.635447
+42	18	User <strong>sss</strong> commented on <a href='/dashboard#post-38'>your post</a>.	f	2025-06-08 10:57:31.674195
+31	11	User <strong>1223123</strong> commented on <a href='/dashboard#post-34'>your post</a>.	t	2025-06-04 16:45:25.965786
+33	11	User <strong>1223123</strong> commented on <a href='/dashboard#post-36'>your post</a>.	t	2025-06-04 16:48:25.580658
+34	11	User <strong>1223123</strong> commented on <a href='/dashboard#post-35'>your post</a>.	t	2025-06-04 16:48:29.177507
+47	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 13:56:21.793759
+48	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 13:56:25.352124
+49	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 13:56:27.563018
+50	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 13:58:05.012627
+51	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 13:58:10.391033
+52	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 14:00:48.251266
+53	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 14:00:54.626075
+54	22	User <strong>Administrator</strong> commented on <a href='/dashboard#post-42'>your post</a>.	f	2025-06-10 14:01:36.176802
+63	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:26:19.893821
+64	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:26:30.069752
+65	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:29:19.541159
+66	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 14:29:27.550952
+67	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 17:15:47.944287
+68	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-10 17:39:55.17826
+69	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-11 15:41:02.807839
+70	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-11 15:41:09.255195
+71	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-11 15:41:10.867853
+72	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-11 15:41:12.522727
+73	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-11 15:41:14.013832
+75	5	User <strong>Administrator</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-11 15:56:14.338415
+76	5	User <strong>uzytkownik</strong> commented on <a href='/dashboard#post-30'>your post</a>.	f	2025-06-11 15:56:20.75643
+74	23	Registration was successful!	t	2025-06-11 15:53:14.418824
+77	23	User <strong>Administrator</strong> commented on <a href='/dashboard#post-45'>your post</a>.	t	2025-06-11 16:00:59.979916
+\.
+
+
+--
+-- TOC entry 3506 (class 0 OID 16668)
+-- Dependencies: 220
+-- Data for Name: posts; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.posts (id, user_id, title, content, created_at, image) FROM stdin;
+1	1	Pierwszy lot do Rzeszowa	Dziś rano wyruszyłem z EPKK w stronę EPRZ. Zapowiadała się piękna pogoda: słonecznie, bezchmurnie pod 5 tys. stóp. Lot trwał około 2 godzin – odwiedziłem także EPDN na krótki postój. Lądowanie w Rzeszowie czyste, brak turbulencji. Wieczorem wróciłem zgodnie z planem. Znalazłem świetną knajpkę z lokalnymi przysmakami, więc miło spędzony dzień.	2025-03-02 07:15:23	\N
+2	5	Niespodziewana awaria silnika	Podczas dzisiejszego lotu szkoleniowego na C152 zauważyłem dziwny dźwięk dochodzący z silnika – około 15 min po starcie. Próbowałem zmniejszyć moc, ale hałas się nasilił. Skierowałem się awaryjnie na lotnisko zapasowe EPLL, wylądowałem bezpiecznie. Mechanicy stwierdzili drobne uszkodzenie pompy paliwowej. Lekcja na przyszłość: zawsze kontrolować ciśnienie paliwa przed startem!	2025-03-05 11:42:08	uploads/post_images/awaria.jpg
+3	3	Lot widokowy nad Tatrami	Zaplanowałem dziś lot widokowy na DA-40 z EPKT do EPWR, trasa przez Tatry. Widoki niesamowite – śnieg na szczytach i czyste niebo. Przed startem sprawdziłem METAR: EPKT 25010KT 9999 SCT020, idealne warunki. Po drodze spotkałem kilku innych pilotów w powietrzu. Wracając zahaczyłem o EPKP na kawę, polecam.	2025-03-10 14:05:47	\N
+8	8	Spotkanie lotnicze w Radomiu	Wczoraj byłem na air show w Radomiu: piękne akrobacje, zwłaszcza PZL-130 Orlik. Spotkałem tam znajomych z klubu, wymieniliśmy się doświadczeniami z ostatnich lotów. Koncerty, stoiska z gadżetami, super atmosfera. Już planuję kolejne wydarzenie za rok.	2025-03-22 20:10:44	\N
+9	9	Nowy rekord wysokości w szybowcu	Udało mi się dziś pobić własny rekord – 4500 metrów bez silnika w szybowcu SZD-50-3 Puchacz. Warunki termiczne idealne: baza chmur około 6000 stóp. Lot trwał 3 godziny, w międzyczasie podziwiałem chmury cumulus. Lądowanie w rodzinnym aeroklubie – emocje ogromne!	2025-03-25 16:22:13	\N
+10	10	Symulator Boeinga 737	Dziś spędziłem kilka godzin w symulatorze Boeinga 737 NGX w centrach szkoleniowych. Ustawienia IFR na trasę EPWA–EGLL, krytyczne podejście SIDs i STARs. Niestety, podczas drugiego podejścia do Londynu zaliczyłem “unstable approach” – musiałem zrobić missed approach. Wnioski: prędkości i konfiguracja klap muszą być idealne.	2025-03-28 11:05:02	\N
+11	3	Lot nocny nad Mazurami	Zaplanowałem lot nocny z EPKT do EPKM (Mikołajki). Światła wsi prezentowały się magicznie. Wykorzystałem tryb NVG w kasku – świetna zabawa. Na trasie drobne turbulencje przy froncie, ale radzę sobie z podejściem na “NDB 360”. Lądowanie o 01:00 bez niespodzianek.	2025-04-02 23:47:58	\N
+12	1	Konserwacja silnika w warsztacie	Oddałem dziś Cessnę do serwisu – drobne wycieki oleju przy cylindrze numer 3. Mechanik stwierdził, że uszczelka wymaga wymiany. Wrócę po naprawie w piątek. Mając świadomość, że bezpieczny samolot to podstawa, nie ryzykuję bezpośrednio lotem “na oko”.	2025-04-05 10:17:44	\N
+15	5	Towarzyski lot akrobacyjny	W miniony weekend zorganizowaliśmy w kliencie małe zawody akrobacyjne: pętle, beczki, wiraże. Wystartowałem na Extra 300 – świetna maszyna, dynamiczna i responsywna. Mój najlepszy wynik: 2 pętle w ciągu 15 sekund. Kolega “WingCommander” dał czadu przy zwrotach. Zwycięstwo przypadło “PropMaster”.	2025-04-15 18:33:50	uploads/post_images/akrobacje.jpg
+17	9	Wspólny czarter do Innsbrucka	Umówiłem się z kolegami na czarter GippsAera za namiotem – lot EPKT–LOWI. Przelot przez Alpy – wymagające podejście na RNAV z ostrymi górami w tle. Widoki cudowne. Przy lądowaniu mocny wiatr z doliny Inn, musiałem zrobić overshoot i podejście drugi raz. Po wylądowaniu degustacja specjałów w Tyrolu!	2025-04-20 13:59:44	\N
+19	10	Pierwsze podejście do Pamiru	Dziś na symulatorze próbowałem podejścia do High-Altitude Airport w strefie Pamiru. Ustawienia IFR: TAWS ON, prędkość Vref+5, wciągnięte podwozie później. Silne wiatry z północy, warunki odczuwalne jak w prawdziwym świecie. W symulatorze zobaczyłem widok ośnieżonych gór, świetne szkolenie!	2025-04-25 16:08:37	\N
+20	8	Testy paliwowe w locie	Zespół mechaników poprosił mnie o weryfikację zużycia paliwa na trasie do EPWA i z powrotem. Lot C152 w trybie ekonomicznym – spalanie ok. 8 gal/godz. Widoczność dobra, wiatr czołowy ok. 5 węzłów. Podsumowanie w raporcie – samolot gotowy na szkolenia. Polecam każdemu pilotowi takie pomiary.	2025-04-28 10:55:22	\N
+21	1	Dzień otwarty w Aeroklubie	Organizowaliśmy dziś dzień otwarty: rodzinne pikniki, pokazy szybowcowe, możliwość przejażdżki samolotem. Upubliczniliśmy nowe C152 na wystawie, dzieciaki zachwycone. Pogoda w kratkę – słońce przeplatało się z chmurami, ale impreza odbyła się bez deszczu. Zainteresowanie duże, planujemy powtórzyć we wrześniu.	2025-05-01 12:30:10	\N
+22	3	Planowanie trasy wokół Bałtyku	Chcę w maju polecieć w lot dookoła Bałtyku – EPKK–EPPO–EFHK–EKCH–EBBR–EPWA–EPKK. Trasa długa, wymaga złożonego planu nawigacyjnego IFR+VFR. Sprawdzam NOTAMy i prognozy TAF. Czekam na potwierdzenie zgłoszeń lotów nad morzem. Ktoś miał podobne doświadczenia, proszę o rady!	2025-05-03 14:02:55	\N
+25	9	Zimowy lot nad Tatrami	W styczniu planowałem lot na nartach od EPWR do EPPR – niestety burza śnieżna zmieniła plany. Dziś jednak warunki były idealne: śnieg na szczytach, baza chmur poniżej 2000 ft. Przelot na C172 trwał 1,5 godziny, widoki jak z pocztówki. Polecam każdemu pilotowi, żeby spróbował zimowej scenerii.	2025-05-12 11:23:07	\N
+28	8	Lot wakacyjny nad Adriatykiem	W czerwcu planuję lot czarterem C172 z Gdańska do Chorwacji (EPGD–LDZA) na trasie nad Bałtykiem, Niemcami, Austrią i Włochami. Trasa długa, trzeba odwiedzić parę lotnisk przesiadkowych. Marzy mi się Blue Eye z lotu ptaka! Ktoś był ostatnio w LDZA, jak wyglądają procedury na granicy?	2025-05-20 07:55:13	\N
+29	10	Pierwszy lot solo na GPS	Dziś odbyłem pierwszy lot solo z nawigacją GPS – trasa EPKT–EPKK. Używałem FlyX GPS, dokładność +/- 5 m, łatwość w planowaniu trasy i podejściu. Przy lądowaniu w EPKK zmiana wiatru z 5KT to był test, ale wszystko w porządku. Instruktor był dumny! To był wyjątkowy dzień.	2025-05-22 12:12:48	\N
+30	5	Przegląd bezpieczeństwa w kliencie	Spotkanie BHP w naszym aero-klubie: omówiliśmy procedury ewakuacji, kontrolę paliwa i sprawdzanie prognoz meteorologicznych przed lotem. Wskazówki instruktorów: zawsze robić cross-check przed każdym startem. Nowy regulamin opublikowany na stronie klubu. Pamiętajcie&nbsp;– safety first!	2025-05-25 14:37:55	\N
+44	23	www	weee	2025-06-11 15:57:26.574271	\N
+\.
+
+
+--
+-- TOC entry 3522 (class 0 OID 41438)
+-- Dependencies: 238
+-- Data for Name: posts_history; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.posts_history (history_id, post_id, user_id, title, content, created_at, image, archived_at) FROM stdin;
+14	32	12	sdsd	<b>bgf<i>gffgdfgdfgd</i>dfgfd</b>dffgdf<u>dfgfgf f gfg fg</u>	2025-06-02 00:22:21.071461	\N	2025-06-02 07:17:08.832507
+15	31	11	erwe	werwe	2025-06-02 00:00:17.846794	\N	2025-06-02 07:17:16.309293
+16	4	7	Wieczorny trening IFR	Trening IFR w nocy na symulatorze – planuję certyfikację do końca roku. Przećwiczyłem podejścia do EPWA i EPPO, największy problem miałem z Crosswind Correction przy podejściu VOR. Instruktor powiedział, że robię duże poprawki, powinienem bardziej delikatnie korygować kurs. Czekam na kolejną sesję.	2025-03-12 22:30:11	\N	2025-06-07 08:57:54.291085
+17	13	7	Kurs pilota szybowcowego	Rozpocząłem dzisiaj kurs na licencję szybowcową – pierwszy egzamin wewnętrzny jeszcze w przyszłym tygodniu. Teoria ok, w powietrzu też – prowadzenie szybowca dużo bardziej subtelne niż samolotu. Instruktor: “Pamiętaj o delikatnych ruchach” – muszę się tego pilnie trzymać. Czas zaplanować lot OW 250 km po mazurskim niebie.	2025-04-08 15:52:19	\N	2025-06-07 08:57:54.291085
+18	23	7	Lot akrobacyjny nad Poznaniem	Dziś na Extra 300 robiliśmy akrobacje nad EPPO: beczki, pętle, półbeczki. Instruktor podpowiadał korekty przy prędkości 180 węzłów, bo przy 150 samolot może stać w miejscu w powietrzu. Publiczność zebrana na lotnisku dopingowała, super emocje. Po treningu pizza w barze lotniczym.	2025-05-06 17:48:33	\N	2025-06-07 08:57:54.291085
+19	5	2	Awans w Aerotokach!	Z radością informuję, że zostałem upgrade’owany do kapitana w liniach Aerotok od 1 kwietnia. Po 5 latach ciężkiej pracy w dziale cargo wreszcie mam swój Boeing 737 w rękach. Planuję celebrację z kolegami z klubu lotniczego – w przyszłym tygodniu spotkanie w barze lotniczym "Propeller".	2025-03-15 09:18:55	\N	2025-06-07 08:58:15.591356
+20	16	2	Lot humanitarny do Ukrainy	Dziś wzięliśmy udział w lotach humanitarnych do Lwowa – przewieźliśmy lekarstwa i żywność. Trasę EPKK–UKLL przebyliśmy w 2 godziny na C172 z pełnym ładunkiem. Warunki pogodowe dobre, lecz w rejonie frontu niewielkie turbulencje. Misja udana, dzięki współpracy wielu pilotów.	2025-04-18 07:45:27	\N	2025-06-07 08:58:15.591356
+21	24	2	Odwołane loty z powodu mgły	Na lotnisku EPMM dzisiaj gęsta mgła, widoczność poniżej 500 metrów. Wszystkie loty odwołane do odwołania. Mieliśmy w planie szkoleniowy lot na 10:00, ale płytę lotniska ledwo widać. Zamiast lotu symulator – lepiej niż nic. Proszę pilotów o sprawdzanie NOTAMów wcześniej.	2025-05-10 08:15:12	\N	2025-06-07 08:58:15.591356
+22	39	11	ds	ds	2025-06-08 10:15:50.933159	uploads/1749377750_FB_IMG_1576586901211.jpg	2025-06-08 10:16:07.225913
+23	40	11	yujtg	ghj	2025-06-08 10:31:25.803685	uploads/1749378685_7f081344a02dcfe4cee34734a4a4a566fdb4a84f874b8880ef433658f228dea0.gif	2025-06-08 10:33:46.429599
+24	41	21	sss	sssadasd<b>sdsdasdsdasdas ssss</b>s sd sd sd	2025-06-08 11:56:12.757513	\N	2025-06-08 12:07:26.142565
+25	38	18	SS	qweq	2025-06-07 18:18:10.1444	\N	2025-06-08 12:07:36.788322
+26	36	11	asasas	assaas	2025-06-04 16:48:13.681853	\N	2025-06-08 14:07:36.634835
+27	37	11	qweqweewq	qweqwewqeqwe	2025-06-04 16:48:17.651967	\N	2025-06-08 14:08:12.977059
+28	42	22	errre	ererere&nbsp;<b>erererwerwre erwere<u>rerere rerererer e</u></b><u>er er er er er</u>rer e	2025-06-08 14:59:04.531399	\N	2025-06-10 14:01:49.528842
+29	35	11	wqweqw	qweqwe	2025-06-04 16:48:10.649816	\N	2025-06-10 14:01:54.996712
+30	34	11	werrew	werewrew	2025-06-02 19:41:58.586914	\N	2025-06-10 14:02:02.485664
+31	33	15	Wew	qwe	2025-06-02 07:43:02.645378	\N	2025-06-10 14:08:58.112056
+32	6	4	Przelot z Wrocławia do Gdańska	Dziś odbył się lot biznesowy na C172 między EPRZ a EPGD. Trasa przez całą Polskę – wspaniałe widoki nad Wisłą. Wiatr boczny przy lądowaniu w Gdańsku około 12 węzłów, więc trochę wyzwanie, ale wszystko poszło gładko. Wieczorem wróciłem pociągiem do Wrocławia, bo poranny lot o 6:00.	2025-03-18 18:47:30	\N	2025-06-10 16:38:53.974011
+33	14	4	Malta Air Race wspomnienia	Pamiętam lot w ramach Malta Air Race 2024 – start z EPMM, przelot nad morzem, a potem dynamiczne podejście do MALTA. Pogoda słoneczna, wiatr boczny 15 węzłów. Zmęczenie ogromne, ale nagroda – niesamowite widoki i adrenalina w kokpicie. Chciałbym w przyszłym roku ponowić udział.	2025-04-12 09:20:03	\N	2025-06-10 16:38:53.974011
+34	27	4	Szybowcowe zawody regionalne	Uczestniczyłem w zawodach szybowcowych Góra Szybowcowa Cup – trasa 200 km po trasie EPKT–EPKL–EPLU–EPKT. Warunki termiczne wyśmienite, wiatr lekki. Zająłem 2. miejsce, uległem tylko “GliderEnthusiast”. Nagroda to voucher na tankowanie na cały sezon. Gratulacje dla całej ekipy!	2025-05-18 16:02:29	\N	2025-06-10 16:38:53.974011
+35	43	11	www	www	2025-06-10 17:40:02.402567	\N	2025-06-11 15:41:00.391062
+36	7	6	Nowy model Cessna w locie testowym	Udało mi się dziś wsiąść do nowego egzemplarza Cessny 172S. Silnik Lycoming o mocy 180 KM, lepsze osiągi przy starcie – potrzebowałem mniej drogi do wybiegnięcia. Testowałem też nowe awioniki Garmin G3X Touch. Wrażenia świetne, będę planował zakup dla naszego aero-klubu.	2025-03-20 13:55:06	uploads/post_images/cessna_test.jpg	2025-06-11 16:02:59.494415
+37	18	6	Spontaniczny lot do Poznania	W piątek wieczorem wsiadłem w C152 i poleciałem do EPPO. Nocne latanie – wspaniałe uczucie przecinania ciszy nieba. Późna godzina, mały ruch, mało turbulencji. Na lotnisku w Poznaniu pustki, a w barze lotniczym zupa pomidorowa idealna na rozgrzanie. Wracałem nad ranem.	2025-04-22 23:11:09	\N	2025-06-11 16:02:59.494415
+38	26	6	Testy systemu ADS-B	Dziś zamontowałem moduł ADS-B w C172 – podczas przelotu między EPKK a EPRZ mogłem obserwować ruch lotniczy w zasięgu. Wszystko działa poprawnie: odbieram sygnały z rejonu WAW, EPMD i EPKT. Warto zainwestować, bezpieczeństwo nie ma ceny.	2025-05-15 09:37:44	\N	2025-06-11 16:02:59.494415
+39	45	23	www	qwe&nbsp;<b>ewqwwewew weewewe ew ewewe<u>e eeewq wewewe</u></b><u>&nbsp;wew ewewe&nbsp;</u>	2025-06-11 15:57:58.560316	\N	2025-06-11 16:12:18.270864
+\.
+
+
+--
+-- TOC entry 3510 (class 0 OID 16752)
+-- Dependencies: 224
+-- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.roles (id, name) FROM stdin;
+1	USER
+2	ADMIN
+\.
+
+
+--
+-- TOC entry 3504 (class 0 OID 16657)
+-- Dependencies: 218
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.users (id, created_at, nickname, avatar, role_id) FROM stdin;
+1	2025-01-15 08:22:31	SkyNavigator	\N	2
+3	2025-02-02 19:45:12	AeroPilot99	\N	1
+5	2025-02-18 21:30:05	JetSetterAlex	\N	1
+8	2025-03-28 11:22:59	RotorRider	\N	1
+9	2025-04-05 07:38:27	GliderEnthusiast	\N	1
+10	2025-04-20 18:05:53	TurbulenceTamer	\N	1
+12	2025-06-02 00:13:00.697616	newbie	uploads/avatars/12_FB_IMG_1576586901211.jpg	1
+14	2025-06-02 07:41:00.150423	Barney	\N	1
+15	2025-06-02 07:42:49.856008	testtt	uploads/avatars/15_received_2206976029562550.jpeg	1
+16	2025-06-02 19:40:38.066133	weqwqeq	\N	1
+17	2025-06-04 16:42:29.759145	1223123	\N	1
+11	2025-06-01 23:58:44.696154	Administrator	uploads/avatars/11_eb31fb7d4092c498c819a505a37c3d2499dd87da9e95c75c37bd67442a8018ef.jpg	2
+18	2025-06-07 18:17:46.656675	PlaneEnjoyer	\N	1
+19	2025-06-08 10:09:19.108383	gggg	\N	1
+20	2025-06-08 10:49:07.70265	sss	\N	1
+21	2025-06-08 11:55:33.236425	sssada	\N	1
+22	2025-06-08 14:57:42.936084	2223232	uploads/avatars/22_68904110-33c1-46ea-9115-8534b33533d6.png	1
+23	2025-06-11 15:53:14.418824	uzytkownik	uploads/avatars/23_68904110-33c1-46ea-9115-8534b33533d6.png	1
+\.
+
+
+--
+-- TOC entry 3524 (class 0 OID 41524)
+-- Dependencies: 242
+-- Data for Name: users_history; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.users_history (id, user_id, nickname, role_id, email, deleted_at) FROM stdin;
+1	4	WingCommander	1	wingcmd@example.com	2025-06-10 16:38:53.974011+00
+2	6	PropMaster	1	propmaster@example.com	2025-06-11 16:02:59.494415+00
+\.
+
+
+--
+-- TOC entry 3541 (class 0 OID 0)
+-- Dependencies: 233
+-- Name: auth_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.auth_id_seq', 11, true);
+
+
+--
+-- TOC entry 3542 (class 0 OID 0)
+-- Dependencies: 229
+-- Name: comments_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.comments_id_seq', 71, true);
+
+
+--
+-- TOC entry 3543 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: flights_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.flights_id_seq', 49, true);
+
+
+--
+-- TOC entry 3544 (class 0 OID 0)
+-- Dependencies: 231
+-- Name: likes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.likes_id_seq', 704, true);
+
+
+--
+-- TOC entry 3545 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.messages_id_seq', 90, true);
+
+
+--
+-- TOC entry 3546 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: notifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.notifications_id_seq', 77, true);
+
+
+--
+-- TOC entry 3547 (class 0 OID 0)
+-- Dependencies: 237
+-- Name: posts_history_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.posts_history_history_id_seq', 39, true);
+
+
+--
+-- TOC entry 3548 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.posts_id_seq', 45, true);
+
+
+--
+-- TOC entry 3549 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.roles_id_seq', 2, true);
+
+
+--
+-- TOC entry 3550 (class 0 OID 0)
+-- Dependencies: 241
+-- Name: users_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_history_id_seq', 2, true);
+
+
+--
+-- TOC entry 3551 (class 0 OID 0)
+-- Dependencies: 217
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 23, true);
+
+
+--
+-- TOC entry 3330 (class 2606 OID 16866)
+-- Name: auth auth_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth
+    ADD CONSTRAINT auth_email_key UNIQUE (email);
+
+
+--
+-- TOC entry 3332 (class 2606 OID 16864)
+-- Name: auth auth_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth
+    ADD CONSTRAINT auth_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3324 (class 2606 OID 16821)
+-- Name: comments comments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3314 (class 2606 OID 16743)
+-- Name: flights flights_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.flights
+    ADD CONSTRAINT flights_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3326 (class 2606 OID 16842)
+-- Name: likes likes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.likes
+    ADD CONSTRAINT likes_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3328 (class 2606 OID 16844)
+-- Name: likes likes_post_id_user_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.likes
+    ADD CONSTRAINT likes_post_id_user_id_key UNIQUE (post_id, user_id);
+
+
+--
+-- TOC entry 3320 (class 2606 OID 16782)
+-- Name: messages messages_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3322 (class 2606 OID 16803)
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3334 (class 2606 OID 41446)
+-- Name: posts_history posts_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts_history
+    ADD CONSTRAINT posts_history_pkey PRIMARY KEY (history_id);
+
+
+--
+-- TOC entry 3312 (class 2606 OID 16676)
+-- Name: posts posts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3316 (class 2606 OID 16759)
+-- Name: roles roles_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_name_key UNIQUE (name);
+
+
+--
+-- TOC entry 3318 (class 2606 OID 16757)
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3336 (class 2606 OID 41530)
+-- Name: users_history users_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users_history
+    ADD CONSTRAINT users_history_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3310 (class 2606 OID 16664)
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3351 (class 2620 OID 41532)
+-- Name: users trg_archive_user; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_archive_user BEFORE DELETE ON public.users FOR EACH ROW EXECUTE FUNCTION public.fn_archive_user();
+
+
+--
+-- TOC entry 3352 (class 2620 OID 41451)
+-- Name: users trg_notify_on_register; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_notify_on_register AFTER INSERT ON public.users FOR EACH ROW EXECUTE FUNCTION public.notify_on_register();
+
+
+--
+-- TOC entry 3353 (class 2620 OID 41448)
+-- Name: posts trg_posts_archive; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_posts_archive BEFORE DELETE OR UPDATE ON public.posts FOR EACH ROW EXECUTE FUNCTION public.fn_archive_post();
+
+
+--
+-- TOC entry 3344 (class 2606 OID 16822)
+-- Name: comments comments_post_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3345 (class 2606 OID 16827)
+-- Name: comments comments_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3350 (class 2606 OID 33240)
+-- Name: auth fk_auth_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.auth
+    ADD CONSTRAINT fk_auth_user FOREIGN KEY (id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3346 (class 2606 OID 25068)
+-- Name: comments fk_comment_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.comments
+    ADD CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3347 (class 2606 OID 25058)
+-- Name: likes fk_likes_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.likes
+    ADD CONSTRAINT fk_likes_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3348 (class 2606 OID 16845)
+-- Name: likes fk_post; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.likes
+    ADD CONSTRAINT fk_post FOREIGN KEY (post_id) REFERENCES public.posts(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3338 (class 2606 OID 25063)
+-- Name: posts fk_post_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT fk_post_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3349 (class 2606 OID 16850)
+-- Name: likes fk_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.likes
+    ADD CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3340 (class 2606 OID 16744)
+-- Name: flights flights_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.flights
+    ADD CONSTRAINT flights_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3341 (class 2606 OID 16788)
+-- Name: messages messages_receiver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_receiver_id_fkey FOREIGN KEY (receiver_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3342 (class 2606 OID 16783)
+-- Name: messages messages_sender_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3343 (class 2606 OID 16804)
+-- Name: notifications notifications_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3339 (class 2606 OID 16677)
+-- Name: posts posts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3337 (class 2606 OID 41513)
+-- Name: users users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id);
+
+
+-- Completed on 2025-06-11 16:12:54 UTC
+
+--
+-- PostgreSQL database dump complete
+--
+
